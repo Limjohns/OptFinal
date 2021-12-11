@@ -7,14 +7,14 @@
 @Version :   1.0
 @Desc    :   None
 '''
-
+#%% import 
 
 import pandas as pd 
 import numpy as np 
 import matplotlib.pyplot as plt 
 import timeit
 
-#%%
+#%% object function class
 def self_generate_cluster(n=100, sigma=1, c = [1,1]):
     """
     Parameters 
@@ -131,7 +131,7 @@ class ObjFunc():
 
 
 
-#%%
+#%% test 
 
 a1 = self_generate_cluster(n=100, sigma=1, c = [1,1])
 a2 = self_generate_cluster(n=100,  sigma=2, c = [3,4])
