@@ -132,13 +132,13 @@ class ObjFunc():
 
 
 #%% Test sample
+if __name__ == "__main__":
+    a1 = self_generate_cluster(n=100, sigma=1, c = [1,1])
+    a2 = self_generate_cluster(n=100,  sigma=2, c = [3,4])
+    a = np.concatenate((a1,a2),axis=0)
 
-a1 = self_generate_cluster(n=100, sigma=1, c = [1,1])
-a2 = self_generate_cluster(n=100,  sigma=2, c = [3,4])
-a = np.concatenate((a1,a2),axis=0)
-
-X  = np.array([[0,0] for i in np.arange(200)])
+    X  = np.array([[0,0] for i in np.arange(200)])
 
 
-fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
+    fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
 
