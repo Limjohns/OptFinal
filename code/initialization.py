@@ -35,7 +35,7 @@ def self_generate_cluster(n=100, sigma=1, c = [1,1]):
 
 
 class ObjFunc():
-
+    '''Objective Function Class'''
     def __init__(self, X, a, delta = 1e-3, lam = 1):
         self.X     = X
         self.a     = a
@@ -131,7 +131,7 @@ class ObjFunc():
 
 
 
-#%% test 
+#%% Test sample
 
 a1 = self_generate_cluster(n=100, sigma=1, c = [1,1])
 a2 = self_generate_cluster(n=100,  sigma=2, c = [3,4])
