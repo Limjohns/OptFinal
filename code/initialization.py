@@ -12,9 +12,14 @@
 import pandas as pd 
 import numpy as np 
 import matplotlib.pyplot as plt 
+import scipy.io
 import timeit
+import os
 
 #%% object function class
+
+
+
 def self_generate_cluster(n=100, sigma=1, c = [1,1]):
     """
     Parameters 
