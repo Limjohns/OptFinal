@@ -16,9 +16,7 @@ import scipy.io
 import timeit
 import os
 
-#%% object function class
-
-
+#%% load data function
 
 def self_generate_cluster(n=100, sigma=1, c = [1,1]):
     """
@@ -29,16 +27,61 @@ def self_generate_cluster(n=100, sigma=1, c = [1,1]):
     c    : centroid 
     Returns
     ----------
-    c1   : np.array of location pairs
+    c1.T  : np.array in shape (dimension, n)
     """
     c_tuple = tuple(c[i] + np.random.normal(0, sigma, n) for i in range(0,len(c)))
     c1 = np.column_stack(c_tuple)
     return c1
 
+def self_dataset(n1=100,n2=100,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3]):
+    """
+    Parameters 
+    ----------
+    n    : size 
+    sigma: variance
+    c    : centroid 
+    Returns
+    ----------
+    allset.T  : np.array in shape (feature, total samples)
+    alllabel.T: np.array in shape (total samples, 1)
+
+    """
+    set1 = self_generate_cluster(n = n1, sigma = sigma1, c = c1)
+    set2 = self_generate_cluster(n = n2, sigma = sigma2, c = c2)
+    label1 = np.array([[0 for i in range(0,100)]])
+    label2 = np.array([[1 for i in range(0,n2)]])
+    allset = np.concatenate((set1,set2),axis=0)
+    alllabel = np.concatenate((label1,label2),axis=1)
+
+    return allset.T, alllabel.T
+
+def load_dataset(dataset = 'mnist'):
+    """
+    Parameters 
+    ----------
+    dataset : name of dataset
+
+    Returns
+    ----------
+    data  : array in shape: (features, samples)
+    label : array in shape: (samples, 1)
+
+    """
+        
+    data_path  = 'datasets/datasets/{}/{}_data.mat'.format(dataset,dataset)
+    label_path = 'datasets/datasets/{}/{}_label.mat'.format(dataset,dataset)
+    data       = scipy.io.loadmat(data_path)['A']
+    label      = scipy.io.loadmat(label_path)['b']
+
+    if dataset != 'mnist':
+        data   = data.toarray()
+
+    print(dataset,' - data shape: ',data.shape, '; label shape: ',label.shape)
+
+    return data, label
 
 
-
-
+#%%  objective function class
 class ObjFunc():
     '''Objective Function Class'''
     def __init__(self, X, a, delta = 1e-3, lam = 1):
