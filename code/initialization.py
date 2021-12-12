@@ -27,7 +27,7 @@ def self_generate_cluster(n=100, sigma=1, c = [1,1]):
     c    : centroid 
     Returns
     ----------
-    c1.T  : np.array in shape (dimension, n)
+    c1  : np.array in shape (n, dimensions)
     """
     c_tuple = tuple(c[i] + np.random.normal(0, sigma, n) for i in range(0,len(c)))
     c1 = np.column_stack(c_tuple)
@@ -42,7 +42,7 @@ def self_dataset(n1=100,n2=100,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3]):
     c    : centroid 
     Returns
     ----------
-    allset.T  : np.array in shape (feature, total samples)
+    allset.T  : np.array in shape (total samples, features)
     alllabel.T: np.array in shape (total samples, 1)
 
     """
@@ -53,9 +53,9 @@ def self_dataset(n1=100,n2=100,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3]):
     allset = np.concatenate((set1,set2),axis=0)
     alllabel = np.concatenate((label1,label2),axis=1)
 
-    return allset.T, alllabel.T
+    return allset, alllabel.T
 
-def load_dataset(dataset = 'mnist'):
+def load_dataset(dataset = 'wine'):
     """
     Parameters 
     ----------
@@ -63,7 +63,7 @@ def load_dataset(dataset = 'mnist'):
 
     Returns
     ----------
-    data  : array in shape: (features, samples)
+    data  : array in shape: (samples, features)
     label : array in shape: (samples, 1)
 
     """
@@ -75,7 +75,8 @@ def load_dataset(dataset = 'mnist'):
 
     if dataset != 'mnist':
         data   = data.toarray()
-
+        
+    data = data.T
     print(dataset,' - data shape: ',data.shape, '; label shape: ',label.shape)
 
     return data, label
