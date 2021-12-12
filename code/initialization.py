@@ -5,9 +5,9 @@
 @Time    :   2021/12/11 17:21:18
 @Author  :   Lin Junwei
 @Version :   1.0
-@Desc    :   None
+@Desc    :   initialization class and function 
 '''
-#%% import hahahahahha
+#%% import 
 
 import pandas as pd 
 import numpy as np 
