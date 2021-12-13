@@ -223,3 +223,8 @@ if __name__ == "__main__":
 
 
     fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
+    
+#%% test
+X  = np.array([[0,0] for i in np.arange(4)])
+a = np.array([[1,1],[1,1],[2,2],[2,2]])
+f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
