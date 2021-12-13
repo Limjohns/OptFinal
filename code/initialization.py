@@ -48,7 +48,7 @@ def self_dataset(n1=100,n2=100,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3]):
     """
     set1 = self_generate_cluster(n = n1, sigma = sigma1, c = c1)
     set2 = self_generate_cluster(n = n2, sigma = sigma2, c = c2)
-    label1 = np.array([[0 for i in range(0,100)]])
+    label1 = np.array([[0 for i in range(0,n1)]])
     label2 = np.array([[1 for i in range(0,n2)]])
     allset = np.concatenate((set1,set2),axis=0)
     alllabel = np.concatenate((label1,label2),axis=1)
@@ -85,11 +85,12 @@ def load_dataset(dataset = 'wine'):
 #%%  objective function class
 class ObjFunc():
     '''Objective Function Class'''
-    def __init__(self, X, a, delta = 1e-3, lam = 1):
-        self.X     = X
-        self.a     = a
-        self.delta = delta
-        self.lam   = lam 
+    def __init__(self, X, a, delta = 1e-3, lam = 1, if_use_weight = False):
+        self.X             = X
+        self.a             = a
+        self.delta         = delta
+        self.lam           = lam 
+        self.if_use_weight = if_use_weight
 
     def norm_sum_squ(self, a,x=0,squ=True):
         """
@@ -144,6 +145,15 @@ class ObjFunc():
         elif y_norm > self.delta:
             return y/y_norm
 
+    def weight(self, i, j, k=5):
+        if self.if_use_weight:
+            if abs(i-j) <= k:
+                return np.exp(-0.5*self.norm_sum_squ(self.a[i], self.a[j], squ=True))
+            else:
+                return 0
+        else:
+            return 1
+
 
     def hub_sum_pairwise(self):
         '''
@@ -153,7 +163,7 @@ class ObjFunc():
         res = 0
         for i in range(0,ls):
             for j in range(i+1,ls):
-                res += self.hub(self.X[i], self.X[j])
+                res += self.hub(self.X[i], self.X[j]) * self.weight(i, j)
         return res
 
 
@@ -163,7 +173,7 @@ class ObjFunc():
         res = 0
         for i in range(0,ls):
             for j in range(i+1,ls):
-                res += self.grad_hub(self.X[i], self.X[j])
+                res += self.grad_hub(self.X[i], self.X[j]) * self.weight(i, j)
         return res
 
 
@@ -190,4 +200,7 @@ if __name__ == "__main__":
 
 
     fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
+
+#%% (3) weighted models
+
 
