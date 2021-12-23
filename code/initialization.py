@@ -131,7 +131,7 @@ class ObjFunc():
         if y_norm <= self.delta:
             return (1/(2*self.delta))*y_norm**2
         elif y_norm > self.delta:
-            return y_norm - self.delta*0.5
+            return y_norm - self.delta*0.5  #return scalar
 
 
     def grad_hub(self, xi, xj):
@@ -143,7 +143,7 @@ class ObjFunc():
         if y_norm <= self.delta:
             return y/self.delta
         elif y_norm > self.delta:
-            return y/y_norm
+            return y/y_norm  #return vector
 
     def hess_hub(self, xi, xj):
         '''Hessian of huber norm'''
@@ -152,7 +152,7 @@ class ObjFunc():
         if y_norm <= self.delta:
             return 1/self.delta
         elif y_norm > self.delta:
-            return (y_norm**2*np.full((len(y),len(y)), 1) - np.dot(y,y.T)) / y_norm**3
+            return (y_norm**2*np.full((len(y),len(y)), 1) - np.dot(y,y.T)) / y_norm**3  #return matrix
         
 
     def weight(self, i, j, k=5):
