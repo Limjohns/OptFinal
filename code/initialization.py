@@ -152,7 +152,7 @@ class ObjFunc():
         if y_norm <= self.delta:
             return 1/self.delta
         elif y_norm > self.delta:
-            return (self.norm_sum_squ(y,squ=True)*np.full((len(y),len(y)), 1) - np.dot(y,y.T)) /  self.norm_sum_squ(y,squ=False)**3
+            return (y_norm**2*np.full((len(y),len(y)), 1) - np.dot(y,y.T)) / y_norm**3
         
 
     def weight(self, i, j, k=5):
