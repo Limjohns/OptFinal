@@ -176,14 +176,30 @@ class ObjFunc():
                 res += self.hub(self.X[i], self.X[j]) * self.weight(i, j)
         return res
 
+    # def grad_hub_sum_pairwise(self):
+    #     '''gradient of the second item of the obj function'''
+    #     ls  = len(self.X)
+    #     res = 0
+    #     for i in range(0,ls):
+    #         for j in range(i+1,ls):
+    #             res += self.grad_hub(self.X[i], self.X[j]) * self.weight(i, j)
+    #     return res
+    def partial_grad_hub_sum(self,i):
+        '''partial gradient of every rows in the gradient vector'''
+        partial_grad = 0
+        for j in range(0, len(self.X)):
+            if j < i:
+                partial_grad += -self.grad_hub(self.X[i], self.X[j])
+            else:
+                partial_grad +=  self.grad_hub(self.X[i], self.X[j])
+
+        return partial_grad 
+
+
     def grad_hub_sum_pairwise(self):
         '''gradient of the second item of the obj function'''
-        ls  = len(self.X)
-        res = 0
-        for i in range(0,ls):
-            for j in range(i+1,ls):
-                res += self.grad_hub(self.X[i], self.X[j]) * self.weight(i, j)
-        return res
+        return np.array([[self.partial_grad_hub_sum(i) for i in range(len(self.X))]])
+
 
     def hess_hub_sum_pairwise(self):
         '''Hessian of the second item of the obj function'''
