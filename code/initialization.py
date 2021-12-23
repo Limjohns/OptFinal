@@ -152,7 +152,7 @@ class ObjFunc():
         if y_norm <= self.delta:
             return 1/self.delta
         elif y_norm > self.delta:
-            return 0
+            return (self.norm_sum_squ(y,squ=True)*np.full((len(y),len(y)), 1) - np.dot(y,y.T)) /  self.norm_sum_squ(y,squ=False)**3
         
 
     def weight(self, i, j, k=5):
@@ -215,8 +215,8 @@ class ObjFunc():
 
 #%% Test sample
 if __name__ == "__main__":
-    a1 = self_generate_cluster(n=100, sigma=1, c = [1,1])
-    a2 = self_generate_cluster(n=100,  sigma=2, c = [3,4])
+    a1 = self_generate_cluster(n=5, sigma=1, c = [1,1])
+    a2 = self_generate_cluster(n=5,  sigma=2, c = [3,4])
     a = np.concatenate((a1,a2),axis=0)
 
     X  = np.array([[0,0] for i in np.arange(200)])
@@ -225,6 +225,6 @@ if __name__ == "__main__":
     fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
     
 #%% test
-X  = np.array([[0,0] for i in np.arange(4)])
+X  = np.array([[0,0], [1,1], [2,2], [3,3]])
 a = np.array([[1,1],[1,1],[2,2],[2,2]])
 f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
