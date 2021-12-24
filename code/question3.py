@@ -47,7 +47,8 @@ def newton_glob(obj, s, sigma, gamma, tol):
         print(iteration)
         
         # choose direction
-        d = -grad_x / hess_x
+        d = -np.linalg.solve(hess_x, grad_x) # d = -grad_x / hess_x
+        
         if direction_check(d, grad_x):
             print('Newton direction is used')
             pass
@@ -101,3 +102,5 @@ f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
 
 
 newton_glob(f, s=1, sigma=0.5, gamma=1e-4, tol=1e-3)
+
+# %%
