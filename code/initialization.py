@@ -5,7 +5,7 @@
 @Time    :   2021/12/11 17:21:18
 @Author  :   Lin Junwei
 @Version :   1.0
-@Desc    :   initialization class and function 
+@Desc    :   initialization class and function
 '''
 #%% import 
 
@@ -190,25 +190,40 @@ class ObjFunc():
         for j in range(0, len(self.X)):
             if j < i:
                 partial_grad += -self.grad_hub(self.X[i], self.X[j])
-            else:
+            elif j > i:
                 partial_grad +=  self.grad_hub(self.X[i], self.X[j])
 
         return partial_grad 
 
 
     def grad_hub_sum_pairwise(self):
-        '''gradient of the second item of the obj function'''
-        return np.array([[self.partial_grad_hub_sum(i) for i in range(len(self.X))]])
+        '''gradient of the second item of the obj function (vector)'''
+        return np.array([[self.partial_grad_hub_sum(i) for i in range(len(self.X))]])  
 
 
-    def hess_hub_sum_pairwise(self):
-        '''Hessian of the second item of the obj function'''
-        ls  = len(self.X)
-        res = 0
-        for i in range(0,ls):
-            for j in range(i+1,ls):
-                res += self.hess_hub(self.X[i], self.X[j]) * self.weight(i, j)
-        return res
+    # def hess_hub_sum_pairwise(self):
+    #     '''Hessian of the second item of the obj function'''
+    #     ls  = len(self.X)
+    #     res = 0
+    #     for i in range(0,ls):
+    #         for j in range(i+1,ls):
+    #             res += self.hess_hub(self.X[i], self.X[j]) * self.weight(i, j)
+    #     return res
+    def partial_hess_hub_sum(self, i, j):
+        '''each element of the Hessian of the second item'''
+        if i == j:
+            diagonal_ele = 0
+            for k in range(0,len(self.X)):
+                if k < i:
+                    diagonal_ele += -self.grad_hub(self.X[k], self.X[i])
+                elif k > i:
+                    diagonal_ele +=  self.hess_hub(self.X[i], self.X[k])
+            return diagonal_ele
+        else:
+            small = np.max(i, j)
+            large = np.min(i, j)
+            return - self.hess_hub(self.X[small], self.X[large])
+        
 
 
     def obj_func(self):
