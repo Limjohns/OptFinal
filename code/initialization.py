@@ -215,6 +215,7 @@ class ObjFunc():
             small = np.max(i, j)
             large = np.min(i, j)
             return - self.hess_hub(self.X[small], self.X[large])
+        
     def hess_product_p(self, p):
         hd = []
         for i in range(len(p)): # each row of vector Hess*d
