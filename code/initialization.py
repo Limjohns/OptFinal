@@ -251,16 +251,17 @@ class ObjFunc():
 
 #%% Test sample
 if __name__ == "__main__":
-    a1 = self_generate_cluster(n=5, sigma=1, c = [1,1])
-    a2 = self_generate_cluster(n=5,  sigma=2, c = [3,4])
-    a = np.concatenate((a1,a2),axis=0)
+    # a1 = self_generate_cluster(n=5, sigma=1, c = [1,1])
+    # a2 = self_generate_cluster(n=5,  sigma=2, c = [3,4])
+    # a  = np.concatenate((a1,a2),axis=0)
+    #
+    # X  = np.array([[0,0] for i in np.arange(200)])
 
-    X  = np.array([[0,0] for i in np.arange(200)])
+    X = np.array([[0, 0], [4, 3], [2, 5], [6, 6]])
+    a = np.array([[2, 2], [3, 3], [3, 3], [2, 2]])
+    f = ObjFunc(X=X, a=a, delta=1e-3, lam=1, if_use_weight=True)
 
+    
 
-    fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
     
 #%% test
-X  = np.array([[0,0], [1,1], [2,2], [3,3]])
-a = np.array([[1,1],[1,1],[2,2],[2,2]])
-f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
