@@ -269,8 +269,8 @@ class ObjFunc():
                     diagonal_ele +=  self.hess_hub(self.X[i], self.X[k]) * self.weight(i,j)
             return diagonal_ele
         else:
-            small = np.max(i, j)
-            large = np.min(i, j)
+            small = max(i, j)
+            large = min(i, j)
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
 
@@ -357,7 +357,6 @@ a = np.array([[1,1],[1,1],[2,2],[2,2]])
 f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
 
 grad = f.grad_hub_sum_pairwise()
-
 
 # %%
 # test
