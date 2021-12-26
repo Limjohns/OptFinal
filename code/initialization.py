@@ -224,6 +224,14 @@ class ObjFunc():
             large = np.min(i, j)
             return - self.hess_hub(self.X[small], self.X[large])
         
+    def hess_product_p(self, p):
+        hd = []
+        for i in range(len(p)): # each row of vector Hess*d
+            hd_i = 0
+            for k in range(len(p)):  # to sum up calculate each row
+                hd_i += self.partial_hess_hub_sum(i, k)* p[k]
+            hd.append(hd_i)
+        return np.array(hd).reshape((-1,1))
 
 
     def obj_func(self):
