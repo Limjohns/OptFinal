@@ -29,7 +29,7 @@ fx.obj_func()
 
 
 #%% Newton-CG method
-def cg(obj, grad, tol, maxiter):
+def cg(obj, grad, tol, maxiter=10):
     # initialize iterating parameters
     iternum = 0
     x           = np.zeros((obj.X.size, 1))                              #(nd, 1) x0
@@ -40,15 +40,23 @@ def cg(obj, grad, tol, maxiter):
     # iterate
     while obj.norm_sum_squ(r, squ=False) > tol and iternum <= maxiter:
         iternum += 1
-        hess_prod_p = obj.hess_product_p(p)                                    #(nd, 1) A*p0
-        alpha       = -(np.dot(r.T, p)) / (np.dot(p.T, hess_prod_p))           #scalar  alpha0
-        x           = x + alpha * p                                            #(nd, 1) x1
-        r           = r + alpha * hess_prod_p                                  #(nd, 1) r1
-        beta        = (np.dot(r.T, hess_prod_p)) / (np.dot(p.T, hess_prod_p))  #scalar  beta1
-        p           = -r + beta * p                                            #(nd, 1) p1
-    return x
+        hess_prod_p = obj.hess_product_p(p)                                        #(nd, 1) A*p0
+        # check if pAp is positive to ensure the correctness of following calculations
+        if np.dot(p.T, hess_prod_p) <= 0:
+            break
+        else:
+            alpha       = -(np.dot(r.T, p)) / (np.dot(p.T, hess_prod_p))           #scalar  alpha0
+            x           = x + alpha * p                                            #(nd, 1) x1
+            r           = r + alpha * hess_prod_p                                  #(nd, 1) r1
+            beta        = (np.dot(r.T, hess_prod_p)) / (np.dot(p.T, hess_prod_p))  #scalar  beta1
+            p           = -r + beta * p                                            #(nd, 1) p1
+    if iternum == 0:
+        return -grad
+    else:
+        return x
 
-
+def direction_check(d):
+    
 
 
 
@@ -63,6 +71,9 @@ def newton_glob(obj, s, sigma, gamma, tol):
         print(iteration)
         
         # CG direction d
+        grad_x_norm = obj.norm_sum_squ(grad_x, squ=False)
+        cg_tol = min(1, grad_x_norm**0.1) * grad_x_norm
+        d = cg(obj, grad=grad_x, tol=cg_tol)
         
         
         if direction_check(d, grad_x):
