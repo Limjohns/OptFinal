@@ -352,3 +352,9 @@ if __name__ == "__main__":
     a = np.array([[2, 2], [3, 3], [3, 3], [2, 2]])
     f = ObjFunc(X=X, a=a, delta=1e-3, lam=1, if_use_weight=True)
 
+    fx = ObjFunc(X=X, a=a, delta=1e-3, lam=1)
+    print('norm: ', fx.norm_sum_squ(a))
+    print('huber:', fx.hub(X[1], X[2]))
+    print('gradient huber: ', fx.grad_hub(X[1], X[2]))
+    print('hessian huber  : ', fx.hess_hub(X[1], X[2]))
+
