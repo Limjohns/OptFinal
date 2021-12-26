@@ -24,4 +24,6 @@ X  = np.array([[0,0] for i in np.arange(200)])
 
 fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
 fx.obj_func()
-# %% accelerated gradient method 
+# %% accelerated gradient method
+
+print("Hello")
