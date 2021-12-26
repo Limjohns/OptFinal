@@ -29,6 +29,29 @@ fx.obj_func()
 
 
 #%% Newton-CG method
+def cg(obj, grad, tol, maxiter):
+    # initialize iterating parameters
+    iternum = 0
+    x           = np.zeros((obj.X.size, 1))                              #(nd, 1) x0
+    hess_prod_x = obj.hess_product_p(x)                                  #(nd, 1) A*x0
+    r           = obj.hess_product_p(np.zeros((obj.X.size, 1))) + grad   #(nd, 1) r0
+    p           = -r                                                     #(nd, 1) p0
+    
+    # iterate
+    while obj.norm_sum_squ(r, squ=False) > tol and iternum <= maxiter:
+        iternum += 1
+        hess_prod_p = obj.hess_product_p(p)                                    #(nd, 1) A*p0
+        alpha       = -(np.dot(r.T, p)) / (np.dot(p.T, hess_prod_p))           #scalar  alpha0
+        x           = x + alpha * p                                            #(nd, 1) x1
+        r           = r + alpha * hess_prod_p                                  #(nd, 1) r1
+        beta        = (np.dot(r.T, hess_prod_p)) / (np.dot(p.T, hess_prod_p))  #scalar  beta1
+        p           = -r + beta * p                                            #(nd, 1) p1
+    return x
+
+
+
+
+
 def newton_glob(obj, s, sigma, gamma, tol):
   
     iteration = 0
@@ -39,8 +62,8 @@ def newton_glob(obj, s, sigma, gamma, tol):
         iteration += 1
         print(iteration)
         
-        # choose direction
-        d = -np.linalg.solve(hess_x, grad_x) # d = -grad_x / hess_x
+        # CG direction d
+        
         
         if direction_check(d, grad_x):
             # use CG solutions as direction

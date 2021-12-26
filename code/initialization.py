@@ -253,7 +253,7 @@ class ObjFunc():
             for k in range(len(p)):  # to sum up calculate each row
                 hd_i += self.partial_hess_hub_sum(i, k)* p[k]
             hd.append(hd_i)
-        return np.array(hd).reshape((-1,1))
+        return np.array(hd).reshape((-1,1)) + p
         
     
     def hess_total(self):
