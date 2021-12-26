@@ -20,9 +20,10 @@ a2 = self_generate_cluster(n=100,  sigma=2, c = [3,4])
 a = np.concatenate((a1,a2),axis=0)
 
 X  = np.array([[0,0] for i in np.arange(200)])
+delta=1e-3
+lam=1
 
-
-fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
+fx = ObjFunc(X = X, a = a, delta=delta, lam=lam)
 fx.obj_func()
 # %% accelerated gradient method 
 
@@ -110,3 +111,23 @@ def newton_glob(obj, s, sigma, gamma, tol):
         # print(obj.norm_sum_squ(grad_x, squ=False))
         print(X)
     return X
+
+def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
+    alpha = 1/(1+n*lam/delta)
+    t_k_1 = 1
+    iteration = 0
+    x_k_1 = x_k
+    obj = ObjFunc(x_k, a, delta = delta, lam = lam, if_use_weight = if_use_weight)
+    grad_x = obj.grad_obj_func()
+
+    while obj.norm_sum_squ(grad_x, squ=False) > tol:
+        beta_k = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
+        t_k_1 = 0.5*(1+(1+4*t_k_1**2)**0.5)
+        y_k = x_k + beta_k*(x_k - x_k_1)
+        obj = ObjFunc(y_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
+        x_k = y_k - alpha*(obj.grad_obj_func())
+        iteration += 1
+        obj = ObjFunc(x_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
+        grad_x = obj.grad_obj_func()
+
+    return x_k
