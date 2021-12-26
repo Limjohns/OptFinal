@@ -175,7 +175,7 @@ class ObjFunc():
         if y_norm <= self.delta:
             return 1/self.delta
         elif y_norm > self.delta:
-            return (y_norm**2*np.full((len(y),len(y)), 1) - np.dot(y,y.T)) / y_norm**3  #return matrix
+            return (y_norm**2*np.eye(len(y)) - np.dot(y,y.T)) / y_norm**3  #return matrix
         
 
     def weight(self, i, j, k=5):
@@ -332,11 +332,11 @@ class ObjFunc():
         grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
         return grad_fx
     
-    def hess_obj_func(self):
-        '''Hessian of the objective function'''
-        first_item_hess  = np.eye(self.X.shape[0]*self.X.shape[1])
-        second_item_hess = self.hess_hub_sum_pairwise()
-        return first_item_hess + second_item_hess
+    # def hess_obj_func(self):
+    #     '''Hessian of the objective function'''
+    #     first_item_hess  = np.eye(self.X.shape[0]*self.X.shape[1])
+    #     second_item_hess = self.hess_hub_sum_pairwise()
+    #     return first_item_hess + second_item_hess
 
 
 
