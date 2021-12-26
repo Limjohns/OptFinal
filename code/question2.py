@@ -55,10 +55,12 @@ def cg(obj, grad, tol, maxiter=10):
     else:
         return x
 
-def direction_check(d):
-    
-
-
+def direction_check(obj, d):
+    grad = obj.grad_obj_func()
+    if np.dot(grad.T, d) < 0:
+        return True
+    else:
+        return False
 
 def newton_glob(obj, s, sigma, gamma, tol):
   
@@ -81,6 +83,8 @@ def newton_glob(obj, s, sigma, gamma, tol):
             pass
         else:
             # use backup direction 'v'
+            d
+            pass
             
         # choose step size
         alpha = s

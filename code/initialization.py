@@ -181,9 +181,9 @@ class ObjFunc():
         partial_grad = 0
         for j in range(0, len(self.X)):
             if j < i:
-                partial_grad += -self.grad_hub(self.X[i], self.X[j])
+                partial_grad += -self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
             elif j > i:
-                partial_grad +=  self.grad_hub(self.X[i], self.X[j])
+                partial_grad +=  self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
 
         return partial_grad 
 
@@ -199,14 +199,14 @@ class ObjFunc():
             diagonal_ele = 0
             for k in range(0,len(self.X)):
                 if k < i:
-                    diagonal_ele += -self.grad_hub(self.X[k], self.X[i])
+                    diagonal_ele += -self.grad_hub(self.X[k], self.X[i]) * self.weight(i,j)
                 elif k > i:
-                    diagonal_ele +=  self.hess_hub(self.X[i], self.X[k])
+                    diagonal_ele +=  self.hess_hub(self.X[i], self.X[k]) * self.weight(i,j)
             return diagonal_ele
         else:
             small = np.max(i, j)
             large = np.min(i, j)
-            return - self.hess_hub(self.X[small], self.X[large])
+            return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
     # def hess_hub_sum_pairwise(self):
     #     for i in range(0, len(self.X)):
