@@ -208,12 +208,6 @@ class ObjFunc():
             large = np.min(i, j)
             return - self.hess_hub(self.X[small], self.X[large])
 
-    # def hess_hub_sum_pairwise(self):
-    #     for i in range(0, len(self.X)):
-    #         for j in range(i,len(self.X)):
-    #             pass
-    #     return 
-
 
     def fill_upper_diag(self, X):
         '''convert a list to upper diagonal
