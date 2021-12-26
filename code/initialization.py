@@ -215,12 +215,21 @@ class ObjFunc():
             small = np.max(i, j)
             large = np.min(i, j)
             return - self.hess_hub(self.X[small], self.X[large])
+    def hess_product_p(self, p):
+        hd = []
+        for i in range(len(p)): # each row of vector Hess*d
+            hd_i = 0
+            for k in range(len(p)):  # to sum up calculate each row
+                hd_i += self.partial_hess_hub_sum(i, k)* p[k]
+            hd.append(hd_i)
+        return np.array(hd).reshape((-1,1))
         
-    def hess_hub_sum_pairwise(self):
-        for i in range(0, len(self.X)):
-            for j in range(i,len(self.X)):
-                pass
-        return 
+        
+    # def hess_hub_sum_pairwise(self):
+    #     for i in range(0, len(self.X)):
+    #         for j in range(i,len(self.X)):
+    #             pass
+    #     return 
 
     def obj_func(self):
         '''objective function'''
