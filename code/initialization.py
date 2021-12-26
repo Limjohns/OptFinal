@@ -223,6 +223,7 @@ class ObjFunc():
     def partial_grad_hub_sum(self,i):
         '''
         Partial gradient of every rows in the gradient vector
+
         Parameters 
         ----------
         i : index of variables to be derived, int
@@ -274,41 +275,34 @@ class ObjFunc():
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
 
-    def fill_upper_diag(self, X):
-        '''
-        convert a list to upper diagonal
-        --- 
+    def triangular_hess_hub_sum(self):
+        
+        (n,d) = self.X.shape
+        
+        row_hess_list = []
+        for i in range(0, n):
+            row_hess = [np.zeros((d, (i+1)*d))]
+            for j in range(i+1 , n):
+                row_hess.append(self.partial_hess_hub_sum(i, j))
+            row_hess_list.append(np.concatenate(row_hess,axis = 1))
+        full_mat = np.concatenate(row_hess_list)
+        
+        return full_mat
 
-        Example:
-        ----------
-        X = [1,2,3,4,5,6]
-        fill_lower_diag(X) 
-        ---> array([[0, 1, 2, 3],
-                    [0, 0, 4, 5],
-                    [0, 0, 0, 6],
-                    [0, 0, 0, 0]])
-
-        '''
-        n    = int(np.sqrt(len(X)*2))+1
-        # mask = np.arange(n)[:,None] < np.arange(n) # or np.tri(n,dtype=bool, k=-1)
-        mask = np.tri(n,dtype=bool, k=-1)
-
-        out  = np.zeros((n,n),dtype=int)
-        out[mask] = X
-        return out
 
     def hess_hub_sum_pairwise(self):
         '''Get the full Hessian Matrix'''
         diagnoal  = []
-        tringular = []
         for i in range(0, len(self.X)):
             for j in range(i, len(self.X)):
                 if i != j:
-                    tringular.append(self.partial_hess_hub_sum(i, j))
+                    pass 
                 else:
                     diagnoal.append(self.partial_hess_hub_sum(i, j))
-        Hess_half = self.fill_upper_diag(tringular)
-        return Hess_half.T + Hess_half + np.diag(diagnoal)
+        diagnoal = np.concatenate(diagnoal)
+        
+        Hess_half = self.triangular_hess_hub_sum()
+        return Hess_half.T + Hess_half + diagnoal
 
     def hess_product_p(self, p):
         '''Newton CG A*p_k'''
@@ -358,3 +352,18 @@ if __name__ == "__main__":
     print('gradient huber: ', fx.grad_hub(X[1], X[2]))
     print('hessian huber  : ', fx.hess_hub(X[1], X[2]))
 
+    X  = np.array([[0,0] for i in np.arange(200)])
+
+
+    fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
+    
+#%% test
+X = np.array([[0,0],[1,2],[3,5],[4,3]])
+a = np.array([[1,1],[1,1],[2,2],[2,2]])
+f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
+f.partial_grad_hub_sum(i=1,j=1)
+grad  = f.grad_hub_sum_pairwise()
+upper = f.triangular_hess_hub_sum()
+# %%
+# test
+# test main - Lin
