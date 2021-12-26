@@ -176,14 +176,6 @@ class ObjFunc():
                 res += self.hub(self.X[i], self.X[j]) * self.weight(i, j)
         return res
 
-    # def grad_hub_sum_pairwise(self):
-    #     '''gradient of the second item of the obj function'''
-    #     ls  = len(self.X)
-    #     res = 0
-    #     for i in range(0,ls):
-    #         for j in range(i+1,ls):
-    #             res += self.grad_hub(self.X[i], self.X[j]) * self.weight(i, j)
-    #     return res
     def partial_grad_hub_sum(self,i):
         '''partial gradient of every rows in the gradient vector'''
         partial_grad = 0
@@ -224,7 +216,11 @@ class ObjFunc():
             large = np.min(i, j)
             return - self.hess_hub(self.X[small], self.X[large])
         
-
+    def hess_hub_sum_pairwise(self):
+        for i in range(0, len(self.X)):
+            for j in range(i,len(self.X)):
+                pass
+        return 
 
     def obj_func(self):
         '''objective function'''
