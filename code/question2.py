@@ -32,6 +32,39 @@ lam=1
 
 
 #%% Newton-CG method
+def cg(obj, grad, tol, maxiter=10):
+    # initialize iterating parameters
+    iternum = 0
+    x           = np.zeros((obj.X.size, 1))                              #(nd, 1) x0
+    hess_prod_x = obj.hess_product_p(x)                                  #(nd, 1) A*x0
+    r           = obj.hess_product_p(np.zeros((obj.X.size, 1))) + grad   #(nd, 1) r0
+    p           = -r                                                     #(nd, 1) p0
+    
+    # iterate
+    while obj.norm_sum_squ(r, squ=False) > tol and iternum <= maxiter:
+        iternum += 1
+        hess_prod_p = obj.hess_product_p(p)                                        #(nd, 1) A*p0
+        # check if pAp is positive to ensure the correctness of following calculations
+        if np.dot(p.T, hess_prod_p) <= 0:
+            break
+        else:
+            alpha       = -(np.dot(r.T, p)) / (np.dot(p.T, hess_prod_p))           #scalar  alpha0
+            x           = x + alpha * p                                            #(nd, 1) x1
+            r           = r + alpha * hess_prod_p                                  #(nd, 1) r1
+            beta        = (np.dot(r.T, hess_prod_p)) / (np.dot(p.T, hess_prod_p))  #scalar  beta1
+            p           = -r + beta * p                                            #(nd, 1) p1
+    if iternum == 0:
+        return -grad
+    else:
+        return x
+
+def direction_check(obj, d):
+    grad = obj.grad_obj_func()
+    if np.dot(grad.T, d) < 0:
+        return True
+    else:
+        return False
+
 def newton_glob(obj, s, sigma, gamma, tol):
   
     iteration = 0
@@ -42,8 +75,11 @@ def newton_glob(obj, s, sigma, gamma, tol):
         iteration += 1
         print(iteration)
         
-        # choose direction
-        d = -np.linalg.solve(hess_x, grad_x) # d = -grad_x / hess_x
+        # CG direction d
+        grad_x_norm = obj.norm_sum_squ(grad_x, squ=False)
+        cg_tol = min(1, grad_x_norm**0.1) * grad_x_norm
+        d = cg(obj, grad=grad_x, tol=cg_tol)
+        
         
         if direction_check(d, grad_x):
             # use CG solutions as direction
@@ -51,6 +87,8 @@ def newton_glob(obj, s, sigma, gamma, tol):
         else:
             pass
             # use backup direction 'v'
+            d
+            pass
             
         # choose step size
         alpha = s

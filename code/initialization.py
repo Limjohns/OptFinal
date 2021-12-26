@@ -25,6 +25,7 @@ def self_generate_cluster(n=100, sigma=1, c = [1,1]):
     n    : size 
     sigma: variance
     c    : centroid 
+
     Returns
     ----------
     c1  : np.array in shape (n, dimensions)
@@ -36,10 +37,11 @@ def self_generate_cluster(n=100, sigma=1, c = [1,1]):
 def self_dataset(n1=100,n2=100,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3]):
     """
     Parameters 
-    ----------
+    ---------- 
     n    : size 
     sigma: variance
     c    : centroid 
+
     Returns
     ----------
     allset.T  : np.array in shape (total samples, features)
@@ -94,15 +96,16 @@ class ObjFunc():
 
     def norm_sum_squ(self, a,x=0,squ=True):
         """
-        - Faster way to cal sum of l2 norms
+        Faster way to cal sum of l2 norms
 
         Parameters 
         ----------
-        x  : current centorid X (n*d) # x could be a scalar
-        a  : list of points   a (n*d) 
+        x  : current centorid X => [n*d]  (x could be a scalar)
+        a  : list of points   a => [n*d]  (when a = 0, it will cal the self l2-norm)
 
         squ: True  - sum of squared norms (first item in obj func)
-            False - sum of simple norms   
+             False - sum of simple norms   
+        
         Returns
         ----------
         res  : sum of l2-norms' square
@@ -122,9 +125,9 @@ class ObjFunc():
         
         Parameters 
         ----------
-        xi : centorid i
-        xj : centorid j
-        delta : default 1e-3
+        xi : centorid i => [1*d]
+        xj : centorid j => [1*d]
+        delta : huber norm param, default 1e-3
         """
         
         y_norm = self.norm_sum_squ(xi-xj,0,squ=False)
@@ -136,7 +139,16 @@ class ObjFunc():
 
     def grad_hub(self, xi, xj):
         '''
-        gradient of huber norm
+        Gradient of huber norm 
+        
+        Parameters 
+        ----------
+        xi  : Single row vector of X (centorid) => [1*d] 
+        xj  : Single row vector of X (centorid) => [1*d] 
+        
+        Returns
+        ----------
+        res : Gradient => [1*d] here: (d,)
         '''
         y      = xi - xj
         y_norm = self.norm_sum_squ(y,0,squ=False)
@@ -146,16 +158,44 @@ class ObjFunc():
             return y/y_norm  #return vector
 
     def hess_hub(self, xi, xj):
-        '''Hessian of huber norm'''
+        '''
+        Hessian of huber norm
+        Parameters 
+        ----------
+        xi  : Single row vector of X => [1*d] 
+        xj  : Single row vector of X => [1*d] 
+        
+        Returns
+        ----------
+        res : Hessian matrix of Huber(xi - xj) => [d*d]
+
+        '''
         y = xi - xj
         y_norm = self.norm_sum_squ(y,0,squ=False)
         if y_norm <= self.delta:
             return 1/self.delta
         elif y_norm > self.delta:
-            return (y_norm**2*np.full((len(y),len(y)), 1) - np.dot(y,y.T)) / y_norm**3  #return matrix
+            return (y_norm**2*np.eye(len(y)) - np.dot(y,y.T)) / y_norm**3  #return matrix
         
 
     def weight(self, i, j, k=5):
+        '''
+        Calculate the Weights in the 2nd term
+        
+        Parameters 
+        ----------
+        i : index, int
+        j : index, int
+        k : k nearest neighbors, int
+        self.if_use_weight : True when using weights model, Boolean
+        
+        Returns
+        ----------
+        1       : When not using weights
+        weights : When using weights
+
+        '''
+
         if self.if_use_weight:
             if abs(i-j) <= k:
                 return np.exp(-0.5*self.norm_sum_squ(self.a[i], self.a[j], squ=True))
@@ -167,7 +207,11 @@ class ObjFunc():
 
     def hub_sum_pairwise(self):
         '''
-        second item of the obj function
+        second item value of the obj function
+        
+        Returns
+        ----------
+        res : value
         '''
         ls  = len(self.X)
         res = 0
@@ -177,59 +221,105 @@ class ObjFunc():
         return res
 
     def partial_grad_hub_sum(self,i):
-        '''partial gradient of every rows in the gradient vector'''
+        '''
+        Partial gradient of every rows in the gradient vector
+        Parameters 
+        ----------
+        i : index of variables to be derived, int
+        
+        Returns
+        ----------
+        1       - when not using weights
+        weights - when using weights
+
+        '''
         partial_grad = 0
         for j in range(0, len(self.X)):
             if j < i:
-                partial_grad += -self.grad_hub(self.X[i], self.X[j])
+                partial_grad += -self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
             elif j > i:
-                partial_grad +=  self.grad_hub(self.X[i], self.X[j])
+                partial_grad +=  self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
 
         return partial_grad 
 
 
     def grad_hub_sum_pairwise(self):
-        '''gradient of the second item of the obj function (vector)'''
-        return np.array([[self.partial_grad_hub_sum(i) for i in range(len(self.X))]])  
+        '''
+        Gradient of the 2nd item of the obj function (vector)
+        
+        Returns
+        ----------
+        Gradient: [n*d] (in the same shape with X)
+
+        '''
+        return np.array([self.partial_grad_hub_sum(i) for i in range(len(self.X))])  
 
 
-    # def hess_hub_sum_pairwise(self):
-    #     '''Hessian of the second item of the obj function'''
-    #     ls  = len(self.X)
-    #     res = 0
-    #     for i in range(0,ls):
-    #         for j in range(i+1,ls):
-    #             res += self.hess_hub(self.X[i], self.X[j]) * self.weight(i, j)
-    #     return res
     def partial_hess_hub_sum(self, i, j):
-        '''each element of the Hessian of the second item'''
+        '''
+        Each element of the Hessian of the second item
+        
+        '''
         if i == j:
             diagonal_ele = 0
             for k in range(0,len(self.X)):
                 if k < i:
-                    diagonal_ele += -self.grad_hub(self.X[k], self.X[i])
+                    diagonal_ele += -self.hess_hub(self.X[k], self.X[i]) * self.weight(i,j)
                 elif k > i:
-                    diagonal_ele +=  self.hess_hub(self.X[i], self.X[k])
+                    diagonal_ele +=  self.hess_hub(self.X[i], self.X[k]) * self.weight(i,j)
             return diagonal_ele
         else:
-            small = np.max(i, j)
-            large = np.min(i, j)
-            return - self.hess_hub(self.X[small], self.X[large])
+            small = max(i, j)
+            large = min(i, j)
+            return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
+
+
+    def fill_upper_diag(self, X):
+        '''
+        convert a list to upper diagonal
+        --- 
+
+        Example:
+        ----------
+        X = [1,2,3,4,5,6]
+        fill_lower_diag(X) 
+        ---> array([[0, 1, 2, 3],
+                    [0, 0, 4, 5],
+                    [0, 0, 0, 6],
+                    [0, 0, 0, 0]])
+
+        '''
+        n    = int(np.sqrt(len(X)*2))+1
+        # mask = np.arange(n)[:,None] < np.arange(n) # or np.tri(n,dtype=bool, k=-1)
+        mask = np.tri(n,dtype=bool, k=-1)
+
+        out  = np.zeros((n,n),dtype=int)
+        out[mask] = X
+        return out
+
+    def hess_hub_sum_pairwise(self):
+        '''Get the full Hessian Matrix'''
+        diagnoal  = []
+        tringular = []
+        for i in range(0, len(self.X)):
+            for j in range(i, len(self.X)):
+                if i != j:
+                    tringular.append(self.partial_hess_hub_sum(i, j))
+                else:
+                    diagnoal.append(self.partial_hess_hub_sum(i, j))
+        Hess_half = self.fill_upper_diag(tringular)
+        return Hess_half.T + Hess_half + np.diag(diagnoal)
+
     def hess_product_p(self, p):
+        '''Newton CG A*p_k'''
         hd = []
         for i in range(len(p)): # each row of vector Hess*d
             hd_i = 0
             for k in range(len(p)):  # to sum up calculate each row
                 hd_i += self.partial_hess_hub_sum(i, k)* p[k]
             hd.append(hd_i)
-        return np.array(hd).reshape((-1,1))
+        return np.array(hd).reshape((-1,1)) + p
         
-        
-    # def hess_hub_sum_pairwise(self):
-    #     for i in range(0, len(self.X)):
-    #         for j in range(i,len(self.X)):
-    #             pass
-    #     return 
 
     def obj_func(self):
         '''objective function'''
@@ -239,13 +329,14 @@ class ObjFunc():
     def grad_obj_func(self):
         '''gradient of the objective function'''
 
-        grad_fx = np.sum(self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
+        grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
         return grad_fx
     
-    def hess_obj_func(self):
-        '''Hessian of the objective function'''
-        hess_fx = len(self.X) + self.lam * self.hess_hub_sum_pairwise()
-        return hess_fx
+    # def hess_obj_func(self):
+    #     '''Hessian of the objective function'''
+    #     first_item_hess  = np.eye(self.X.shape[0]*self.X.shape[1])
+    #     second_item_hess = self.hess_hub_sum_pairwise()
+    #     return first_item_hess + second_item_hess
 
 
 
@@ -261,7 +352,3 @@ if __name__ == "__main__":
     a = np.array([[2, 2], [3, 3], [3, 3], [2, 2]])
     f = ObjFunc(X=X, a=a, delta=1e-3, lam=1, if_use_weight=True)
 
-    
-
-    
-#%% test
