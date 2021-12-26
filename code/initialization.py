@@ -258,7 +258,7 @@ class ObjFunc():
     def grad_obj_func(self):
         '''gradient of the objective function'''
 
-        grad_fx = np.sum(self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
+        grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
         return grad_fx
     
     def hess_obj_func(self):
