@@ -208,12 +208,6 @@ class ObjFunc():
             large = np.min(i, j)
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
-    # def hess_hub_sum_pairwise(self):
-    #     for i in range(0, len(self.X)):
-    #         for j in range(i,len(self.X)):
-    #             pass
-    #     return 
-
 
     def fill_upper_diag(self, X):
         '''convert a list to upper diagonal
@@ -255,14 +249,6 @@ class ObjFunc():
             hd.append(hd_i)
         return np.array(hd).reshape((-1,1)) + p
         
-    
-    def hess_total(self):
-        '''Total Hessian by adding the first item and the sec item'''
-        first_item_hess  = np.eye(self.X.shape[0]*self.X.shape[1])
-        second_item_hess = self.hess_hub_sum_pairwise()
-        
-        return first_item_hess + second_item_hess
-
 
     def obj_func(self):
         '''objective function'''
@@ -272,13 +258,14 @@ class ObjFunc():
     def grad_obj_func(self):
         '''gradient of the objective function'''
 
-        grad_fx = np.sum(self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
+        grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
         return grad_fx
     
     def hess_obj_func(self):
         '''Hessian of the objective function'''
-        hess_fx = len(self.X) + self.lam * self.hess_hub_sum_pairwise()
-        return hess_fx
+        first_item_hess  = np.eye(self.X.shape[0]*self.X.shape[1])
+        second_item_hess = self.hess_hub_sum_pairwise()
+        return first_item_hess + second_item_hess
 
 
 
