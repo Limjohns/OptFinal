@@ -285,3 +285,4 @@ X  = np.array([[0,0], [1,1], [2,2], [3,3]])
 a = np.array([[1,1],[1,1],[2,2],[2,2]])
 f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
 # %%
+# test
