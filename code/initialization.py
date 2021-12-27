@@ -409,13 +409,13 @@ class ObjFunc():
         fx = 0.5*self.norm_sum_squ(a=self.a,x=self.X, squ=True) + self.lam*self.hub_sum_pairwise()
         return fx
 
-    def grad_obj_func(self):
+    def grad_obj_func0(self):
         '''gradient of the objective function'''
 
         grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
         return grad_fx
     
-    def grad_obj_func2(self):
+    def grad_obj_func(self):
         '''gradient of the objective function'''
 
         grad_fx = (self.X-self.a) + self.lam*self.grad_hub_matrix()
@@ -452,16 +452,16 @@ if __name__ == "__main__":
     fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
     
 #%% test
-X = np.array([[0,0],[1,2],[3,5],[4,3]])
-a = np.array([[1,1],[1,1],[2,2],[2,2]])
-coef = grad_hub_coef(X)
-f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=1, if_use_weight=False)
+# X = np.array([[0,0],[1,2],[3,5],[4,3]])
+# a = np.array([[1,1],[1,1],[2,2],[2,2]])
+# coef = grad_hub_coef(X)
+# f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=1, if_use_weight=False)
 
-grad = f.grad_hub_sum_pairwise()
+# grad = f.grad_hub_sum_pairwise()
 
 
-f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
-f.partial_grad_hub_sum(i=1,j=1)
-grad  = f.grad_hub_sum_pairwise()
-upper = f.triangular_hess_hub_sum()
+# f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
+# f.partial_grad_hub_sum(i=1,j=1)
+# grad  = f.grad_hub_sum_pairwise()
+# upper = f.triangular_hess_hub_sum()
 

@@ -9,7 +9,7 @@
 '''
 
 #%%
-from initialization import load_dataset, self_generate_cluster
+from initialization import load_dataset, self_generate_cluster, grad_hub_coef, self_dataset
 from initialization import ObjFunc
 import numpy as np 
 import pandas as pd
@@ -116,23 +116,23 @@ def newton_cg(obj, s, sigma, gamma, tol):
         print(X)
     return X
 
-def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
+def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol):
     alpha = 1/(1+n*lam/delta)
     t_k_1 = 1
     iteration = 0
     x_k_1 = x_k
-    obj = ObjFunc(x_k, a, delta = delta, lam = lam, if_use_weight = if_use_weight)
+    obj = ObjFunc(x_k, a, delta = delta, grad_coef=coef, lam = lam, if_use_weight = if_use_weight)
     grad_x = obj.grad_obj_func()
 
     while obj.norm_sum_squ(grad_x, squ=False) > tol:
         beta_k = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
         t_k_1 = 0.5*(1+(1+4*t_k_1**2)**0.5)
         y_k = x_k + beta_k*(x_k - x_k_1)
-        obj = ObjFunc(y_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
+        obj = ObjFunc(y_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
         x_k_1 = x_k
         x_k = y_k - alpha*(obj.grad_obj_func())
         iteration += 1
-        obj = ObjFunc(x_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
+        obj = ObjFunc(x_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
         grad_x = obj.grad_obj_func()
         print('iteration: ', iteration,
               # '\nbeta_k: ', beta_k,
@@ -144,14 +144,22 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
               '\nobj_value: ', obj.obj_func())
 
     return x_k
-
+#%%
 if __name__ == "__main__":
     t1 = time.time()
     delta = 1e-3
-    lam   = 1
-    tol   = 1e-2
-    X  = np.array([[1,1], [1,1], [2,2], [3,3]])
-    a = np.array([[1,1],[1,1],[2,2],[2,2]])
-    f = ObjFunc(X = X, a = a, delta=delta, lam=lam, if_use_weight=False)
-    AGM(4, lam, delta, X, a, False, tol)
+    lam   = 0.05
+    tol   = 1e-3
+    # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
+    # a = np.array([[1,1],[1,1],[2,2],[2,2]])
+    # coef = grad_hub_coef(X)
+    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+    # AGM(4, lam, delta, X, a, coef, False, tol)
+    n1 = 100
+    n2 = 100
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
+    X = np.array([[2,2] for i in np.arange(n1+n2)]) # initial point
+    coef = grad_hub_coef(X)
+    x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol)
+    f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
     print('time consuming: ', time.time()-t1)
