@@ -23,7 +23,6 @@ import logging
 # a = np.concatenate((a1,a2),axis=0)
 #
 # X  = np.array([[0,0] for i in np.arange(200)])
-
 def my_custom_logger(logger_name, level=logging.INFO):
     """
     Method to return a custom logger with the given name and level
@@ -42,11 +41,28 @@ def my_custom_logger(logger_name, level=logging.INFO):
     logger.addHandler(file_handler)
     return logger
 
-delta=1e-3
-lam=1
+<<<<<<< Updated upstream
+def my_custom_logger(logger_name, level=logging.INFO):
+    """
+    Method to return a custom logger with the given name and level
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    format_string = ("%(asctime)s | %(levelname)s | %(message)s")
+    log_format = logging.Formatter(fmt=format_string,datefmt='%Y-%m-%d %A %H:%M:%S')
+    # Creating and adding the console handler
+    # console_handler = logging.StreamHandler(sys.stdout)
+    # console_handler.setFormatter(log_format)
+    # logger.addHandler(console_handler)
+    # Creating and adding the file handler
+    file_handler = logging.FileHandler(logger_name, mode='a')
+    file_handler.setFormatter(log_format)
+    logger.addHandler(file_handler)
+    return logger
+=======
+logger = my_custom_logger(f'C:/Paper/SEC_LOG_{year}.log')
+>>>>>>> Stashed changes
 
-# fx = ObjFunc(X = X, a = a, delta=delta, lam=lam)
-# fx.obj_func()
 # %% accelerated gradient method 
 
 def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
