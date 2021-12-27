@@ -9,7 +9,7 @@
 '''
 
 #%%
-from initialization import load_dataset, self_generate_cluster, grad_hub_coef, self_dataset
+from initialization import load_dataset, self_generate_cluster, grad_hub_coef, self_dataset, get_weights
 from initialization import ObjFunc
 import numpy as np 
 import pandas as pd
@@ -173,12 +173,17 @@ if __name__ == "__main__":
 
 #%% accelerated gradient method 
 def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol, logname='AGM'):
+    if if_use_weight:
+        weights = get_weights(a, 5)
+    else:
+        weights = None
     alpha     = 1/(1+n*lam/delta)
     t_k_1     = 1
     iteration = 0
     x_k_1     = x_k
-    obj       = ObjFunc(x_k, a, delta = delta, grad_coef=coef, lam = lam, if_use_weight = if_use_weight)
+    obj       = ObjFunc(x_k, a, delta = delta, grad_coef=coef, weights_mat=weights, lam = lam, if_use_weight = if_use_weight)
     grad_x    = obj.grad_obj_func()
+    
     
     logger = my_custom_logger(str(os.getcwd()) + '\\log\\' + logname + '.log')
 
@@ -190,11 +195,11 @@ def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol, logname='AGM'):
         beta_k     = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
         t_k_1      = 0.5*(1+(1+4*t_k_1**2)**0.5)
         y_k        = x_k + beta_k*(x_k - x_k_1)
-        obj        = ObjFunc(y_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
+        obj        = ObjFunc(y_k, a, delta=delta, grad_coef=coef, weights_mat=weights, lam=lam, if_use_weight=if_use_weight)
         x_k_1      = x_k
         x_k        = y_k - alpha*(obj.grad_obj_func())
         iteration += 1
-        obj        = ObjFunc(x_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
+        obj        = ObjFunc(x_k, a, delta=delta, grad_coef=coef, weights_mat=weights, lam=lam, if_use_weight=if_use_weight)
         grad_x     = obj.grad_obj_func()
 
         
@@ -215,9 +220,9 @@ def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol, logname='AGM'):
 #%% test AGM
 if __name__ == "__main__":
     t1 = time.time()
-    delta = 1e-3
+    delta = 1e-3 
     lam   = 0.05
-    tol   = 0.5
+    tol   = 1
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
     # coef = grad_hub_coef(X)
@@ -229,7 +234,7 @@ if __name__ == "__main__":
     X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
     coef = grad_hub_coef(X)
     x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol, logname='AGM')
-    f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=True)
+    # f = ObjFunc(X=X, a=a, grad_coef=coef, weights_mat=weights, delta=delta, lam=lam, if_use_weight=True)
     print('time consuming: ', time.time()-t1)
     
     '''
