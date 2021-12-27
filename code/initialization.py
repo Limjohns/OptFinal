@@ -409,13 +409,13 @@ class ObjFunc():
         fx = 0.5*self.norm_sum_squ(a=self.a,x=self.X, squ=True) + self.lam*self.hub_sum_pairwise()
         return fx
 
-    def grad_obj_func0(self):
+    def grad_obj_func(self):
         '''gradient of the objective function'''
 
         grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
         return grad_fx
     
-    def grad_obj_func(self):
+    def grad_obj_func2(self):
         '''gradient of the objective function'''
 
         grad_fx = (self.X-self.a) + self.lam*self.grad_hub_matrix()
