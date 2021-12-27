@@ -93,11 +93,12 @@ def cg(obj, grad, tol, maxiter=10):
         if np.dot(p.T, hess_prod_p) <= 0:
             break
         else:
-            alpha = -obj.norm_sum_squ(r, squ=True) / (np.dot(p.T, hess_prod_p))[0][0]     #scalar  alpha0
-            x     = x + alpha * p                                            #(nd, 1) x1
-            r     = r + alpha * hess_prod_p                                  #(nd, 1) r1
-            beta  = (np.dot(r.T, hess_prod_p)) / (np.dot(p.T, hess_prod_p))  #scalar  beta1
-            p     = -r + beta * p                                            #(nd, 1) p1
+            r0_norm = obj.norm_sum_squ(r, squ=True)                   #scalar norm of r0
+            alpha   = -r0_norm / (np.dot(p.T, hess_prod_p))[0][0]     #scalar  alpha0
+            x       = x + alpha * p                                   #(nd, 1) x1
+            r       = r + alpha * hess_prod_p                         #(nd, 1) r1
+            beta    = obj.norm_sum_squ(r, squ=True) / r0_norm         #scalar  beta1
+            p       = -r + beta * p                                   #(nd, 1) p1
     if iternum == 0:
         return -grad.reshape(obj.X.shape)
     else:
@@ -151,7 +152,7 @@ if __name__ == "__main__":
     X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     a = np.array([[1,1],[1,1],[2,2],[2,2]])
     coef = grad_hub_coef(X)
-    f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+    f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
     x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-3)
     # n1 = 100
     # n2 = 100
