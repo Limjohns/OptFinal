@@ -9,28 +9,23 @@
 '''
 
 #%%
-from initialization import load_dataset, self_generate_cluster, self_dataset
+from initialization import load_dataset, self_generate_cluster, self_dataset, grad_hub_coef
 from initialization import ObjFunc
 import numpy as np 
 import pandas as pd
 import time
 import logging
+import pickle
 
 #%% 
-# a = load_dataset(dataset='wine')
-# a1 = self_generate_cluster(n=100, sigma=1, c = [1,1])
-# a2 = self_generate_cluster(n=100,  sigma=2, c = [3,4])
-# a = np.concatenate((a1,a2),axis=0)
-#
-# X  = np.array([[0,0] for i in np.arange(200)])
 def my_custom_logger(logger_name, level=logging.INFO):
     """
     Method to return a custom logger with the given name and level
     """
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
-    format_string = ("%(asctime)s | %(levelname)s | %(message)s")
-    log_format = logging.Formatter(fmt=format_string,datefmt='%Y-%m-%d %A %H:%M:%S')
+    format_string = ("%(asctime)s|%(levelname)s|%(message)s")
+    log_format = logging.Formatter(fmt=format_string,datefmt='%H:%M:%S.%f')
     # Creating and adding the console handler
     # console_handler = logging.StreamHandler(sys.stdout)
     # console_handler.setFormatter(log_format)
@@ -41,31 +36,22 @@ def my_custom_logger(logger_name, level=logging.INFO):
     logger.addHandler(file_handler)
     return logger
 
-<<<<<<< Updated upstream
-def my_custom_logger(logger_name, level=logging.INFO):
-    """
-    Method to return a custom logger with the given name and level
-    """
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    format_string = ("%(asctime)s | %(levelname)s | %(message)s")
-    log_format = logging.Formatter(fmt=format_string,datefmt='%Y-%m-%d %A %H:%M:%S')
-    # Creating and adding the console handler
-    # console_handler = logging.StreamHandler(sys.stdout)
-    # console_handler.setFormatter(log_format)
-    # logger.addHandler(console_handler)
-    # Creating and adding the file handler
-    file_handler = logging.FileHandler(logger_name, mode='a')
-    file_handler.setFormatter(log_format)
-    logger.addHandler(file_handler)
-    return logger
-=======
-logger = my_custom_logger(f'C:/Paper/SEC_LOG_{year}.log')
->>>>>>> Stashed changes
+
+def pickle_write(data, filenm, path='/result/'):
+    with open(path + filenm + ".pkl", "wb") as f:
+        pickle.dump(data, f)
+
+def pickle_read(data, filenm, path='/result/'):
+    with open(path + filenm + ".pkl", "rb") as f:
+        out = pickle.load(f)
+    return out
+
+
+
 
 # %% accelerated gradient method 
 
-def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
+def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname = 'AGM'):
 
     alpha = 1/(1+n*lam/delta)
     t_k_1 = 1
@@ -73,6 +59,9 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
     x_k_1 = x_k
     obj = ObjFunc(x_k, a, delta = delta, lam = lam, if_use_weight = if_use_weight)
     grad_x = obj.grad_obj_func()
+
+    logger = my_custom_logger('/log/'+logname+'.log')
+
 
     while obj.norm_sum_squ(grad_x, squ=False) > tol:
         t1 = time.time()
@@ -83,6 +72,9 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
         x_k_1 = x_k
         x_k = y_k - alpha*(obj.grad_obj_func())
         iteration += 1
+
+        pickle_write(data = x_k, filenm=str(iteration), path='/result/AGM1/')
+
         obj = ObjFunc(x_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
         grad_x = obj.grad_obj_func()
         print('iteration: ', iteration,
@@ -94,7 +86,8 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
               '\nnorm of grad: ', obj.norm_sum_squ(grad_x, squ=False),
               '\nobj_value: ', obj.obj_func(),
               '\ntime consuming: ', time.time()-t1)
-
+        logger.info('iteration:', iteration,',norm_grad:', obj.norm_sum_squ(grad_x, squ=False),',obj_value:', obj.obj_func(),',time_consuming:', time.time()-t1)
+        
     return x_k
 
 
@@ -182,22 +175,26 @@ def newton_cg(obj, s, sigma, gamma, tol):
         print(X)
     return X
 
+
 #%% Run
 if __name__ == "__main__":
-    t1 = time.time()
+    t1    = time.time()
     delta = 1e-3
-    lam   = 0.005
+
+    lam   = 0.05
     tol   = 1e-3
-    # X = np.array([[1,1], [1,1], [2,2], [3,3]])
-    # X = np.array([[0, 0], [0, 0], [0, 0], [0, 0]])
-    # a = np.array([[1,1], [2,2],[3,3],[4,4]])
-    # AGM(4, lam, delta, X, a, False, tol)
+    # X   = np.array([[1,1], [1,1], [2,2], [3,3]])
+    # a   = np.array([[1,1],[1,1],[2,2],[2,2]])
+    # coef = grad_hub_coef(X)
+    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+    # AGM(4, lam, delta, X, a, coef, False, tol)
     n1 = 100
     n2 = 100
     a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
-    X = np.array([[0,0] for i in np.arange(n1+n2)]) # initial point
-    AGM(n1+n2, lam, delta, X, a, False, tol)
-    f = ObjFunc(X=X, a=a, delta=delta, lam=lam, if_use_weight=False)
+    X = np.array([[2,2] for i in np.arange(n1+n2)]) # initial point
+    coef = grad_hub_coef(X)
+    x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol)
+    f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
     print('time consuming: ', time.time()-t1)
 
     '''
