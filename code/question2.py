@@ -9,7 +9,7 @@
 '''
 
 #%%
-from initialization import load_dataset, self_generate_cluster
+from initialization import load_dataset, self_generate_cluster, self_dataset
 from initialization import ObjFunc
 import numpy as np 
 import pandas as pd
@@ -117,6 +117,7 @@ def newton_cg(obj, s, sigma, gamma, tol):
     return X
 
 def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
+
     alpha = 1/(1+n*lam/delta)
     t_k_1 = 1
     iteration = 0
@@ -125,6 +126,7 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
     grad_x = obj.grad_obj_func()
 
     while obj.norm_sum_squ(grad_x, squ=False) > tol:
+        t1 = time.time()
         beta_k = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
         t_k_1 = 0.5*(1+(1+4*t_k_1**2)**0.5)
         y_k = x_k + beta_k*(x_k - x_k_1)
@@ -141,17 +143,42 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
               # '\nx_k: ', x_k,
               # '\ngrad: ', grad_x,
               '\nnorm of grad: ', obj.norm_sum_squ(grad_x, squ=False),
-              '\nobj_value: ', obj.obj_func())
+              '\nobj_value: ', obj.obj_func(),
+              '\ntime consuming: ', time.time()-t1)
 
     return x_k
 
 if __name__ == "__main__":
     t1 = time.time()
     delta = 1e-3
-    lam   = 1
-    tol   = 1e-2
-    X  = np.array([[1,1], [1,1], [2,2], [3,3]])
-    a = np.array([[1,1],[1,1],[2,2],[2,2]])
-    f = ObjFunc(X = X, a = a, delta=delta, lam=lam, if_use_weight=False)
-    AGM(4, lam, delta, X, a, False, tol)
+    lam   = 0.005
+    tol   = 1e-3
+    # X = np.array([[1,1], [1,1], [2,2], [3,3]])
+    # X = np.array([[0, 0], [0, 0], [0, 0], [0, 0]])
+    # a = np.array([[1,1], [2,2],[3,3],[4,4]])
+    # AGM(4, lam, delta, X, a, False, tol)
+    n1 = 100
+    n2 = 100
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
+    X = np.array([[0,0] for i in np.arange(n1+n2)]) # initial point
+    AGM(n1+n2, lam, delta, X, a, False, tol)
+    f = ObjFunc(X=X, a=a, delta=delta, lam=lam, if_use_weight=False)
     print('time consuming: ', time.time()-t1)
+
+    '''
+    测试 1
+    delta = 1e-3
+    lam   = 0.001
+    tol   = 1e-2
+    n1 = 100
+    n2 = 100
+    收敛，耗时20min，迭代580+次
+    
+    测试 2
+    delta = 1e-3
+    lam   = 0.005
+    tol   = 1e-2
+    n1 = 100
+    n2 = 100
+    收敛，迭代1711次，耗时3889s
+    '''
