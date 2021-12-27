@@ -73,7 +73,7 @@ def armijo(d, obj, s, sigma, gamma):
                     ,delta=obj.delta
                     ,lam=obj.lam
                     ,if_use_weight=obj.if_use_weight)
-    while obj_2.obj_func() > obj.obj_func()+gamma*alpha*(np.dot((-obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1))):
+    while obj_2.obj_func() > obj.obj_func()+gamma*alpha*(np.dot((-obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1)))[0][0]:
         alpha = alpha * sigma
         obj_2 = ObjFunc(X=obj.X+alpha*d
                         ,a=obj.a
