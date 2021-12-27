@@ -83,16 +83,44 @@ def load_dataset(dataset = 'wine'):
 
     return data, label
 
+def grad_hub_coef(X):
+    n, d = X.shape
+    def loc_fun(row_num, n):
+        if row_num == 1:
+            return None, 0, n-1
+        else:
+            lower_tri = np.tril(np.ones((row_num-1, row_num-1)), k=-1)
+            n_seque = np.array([n-j for j in range(1, row_num)]).reshape((-1,1))
+            loc_coef = np.dot(lower_tri, n_seque)
+            # 生成0, n-1, (n-1)+(n-2),...序列
+            #生成-1在第i行的位子
+            loc_minus_1 = loc_coef - np.arange(row_num-1).reshape((-1,1)) + row_num - 2
+            #生成1在第i行的位子
+            loc_1_start = (2*n-row_num)*(row_num-1)/2
+            loc_1_end = loc_1_start + n - row_num
+            return loc_minus_1.astype(np.int16).reshape((-1,)).tolist(), int(loc_1_start), int(loc_1_end)
+    rows = []
+    for row_num in range(1, n+1):
+        loc_minus_1, loc_1_start, loc_1_end = loc_fun(row_num, n)
+        row = np.zeros((int(n*(n-1)/2),))
+        if loc_minus_1 is None:
+            pass
+        else:
+            row[loc_minus_1] = -1
+        row[loc_1_start:loc_1_end] = 1
+        rows.append(row)
+    return np.stack(rows)
 
 #%%  objective function class
 class ObjFunc():
     '''Objective Function Class'''
-    def __init__(self, X, a, delta = 1e-3, lam = 1, if_use_weight = False):
+    def __init__(self, X, a, grad_coef, delta = 1e-3, lam = 1, if_use_weight = False):
         self.X             = X
         self.a             = a
         self.delta         = delta
         self.lam           = lam 
         self.if_use_weight = if_use_weight
+        self.grad_coef     = grad_coef
 
     def norm_sum_squ(self, a,x=0,squ=True):
         """
@@ -137,7 +165,7 @@ class ObjFunc():
             return y_norm - self.delta*0.5  #return scalar
 
 
-    def grad_hub(self, xi, xj):
+    def grad_hub(self, xi, xj=0):
         '''
         Gradient of huber norm 
         
@@ -254,10 +282,29 @@ class ObjFunc():
         '''
         return np.array([self.partial_grad_hub_sum(i) for i in range(len(self.X))])  
 
+    def grad_hub_matrix(self):
+        '''use matrix to calculate the gradient of the 2nd item'''
+        n, d = self.X.shape
+        xi_xj = []
+        weight_ij = []
+        for i in range(n):
+            for j in range(i+1,n):
+                xi_xj.append(self.X[i]-self.X[j])
+                weight_ij.append(self.weight(i,j))
+        xi_xj = np.stack(xi_xj)
+        weight_ij = np.array(weight_ij).reshape((-1,1))
+
+        grad_xi_xj = np.apply_along_axis(self.grad_hub, 1, xi_xj) * weight_ij
+        return np.dot(self.grad_coef, grad_xi_xj)
+
 
     def partial_hess_hub_sum(self, i, j):
         '''
         Each element of the Hessian of the second item
+        
+        Returns
+        ----------
+        Partial Hessian: [d*d]
         
         '''
         if i == j:
@@ -274,51 +321,56 @@ class ObjFunc():
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
 
-    def fill_upper_diag(self, X):
-        '''
-        convert a list to upper diagonal
-        --- 
+    # def fill_upper_diag(self, X):
+    #     '''
+    #     convert a list to upper diagonal
+    #     --- 
 
-        Example:
-        ----------
-        X = [1,2,3,4,5,6]
-        fill_lower_diag(X) 
-        ---> array([[0, 1, 2, 3],
-                    [0, 0, 4, 5],
-                    [0, 0, 0, 6],
-                    [0, 0, 0, 0]])
+    #     Example:
+    #     ----------
+    #     X = [1,2,3,4,5,6]
+    #     fill_lower_diag(X) 
+    #     ---> array([[0, 1, 2, 3],
+    #                 [0, 0, 4, 5],
+    #                 [0, 0, 0, 6],
+    #                 [0, 0, 0, 0]])
 
-        '''
-        n    = int(np.sqrt(len(X)*2))+1
-        # mask = np.arange(n)[:,None] < np.arange(n) # or np.tri(n,dtype=bool, k=-1)
-        mask = np.tri(n,dtype=bool, k=-1)
+    #     '''
+    #     n    = int(np.sqrt(len(X)*2))+1
+    #     # mask = np.arange(n)[:,None] < np.arange(n) # or np.tri(n,dtype=bool, k=-1)
+    #     mask = np.tri(n,dtype=bool, k=-1)
 
-        out  = np.zeros((n,n),dtype=int)
-        out[mask] = X
-        return out
+    #     out  = np.zeros((n,n),dtype=int)
+    #     out[mask] = X
+    #     return out
 
-    def hess_hub_sum_pairwise(self):
-        '''Get the full Hessian Matrix'''
-        diagnoal  = []
-        tringular = []
-        for i in range(0, len(self.X)):
-            for j in range(i, len(self.X)):
-                if i != j:
-                    tringular.append(self.partial_hess_hub_sum(i, j))
-                else:
-                    diagnoal.append(self.partial_hess_hub_sum(i, j))
-        Hess_half = self.fill_upper_diag(tringular)
-        return Hess_half.T + Hess_half + np.diag(diagnoal)
+    # def hess_hub_sum_pairwise(self):
+    #     '''Get the full Hessian Matrix'''
+    #     diagnoal  = []
+    #     tringular = []
+    #     for i in range(0, len(self.X)):
+    #         for j in range(i, len(self.X)):
+    #             if i != j:
+    #                 tringular.append(self.partial_hess_hub_sum(i, j))
+    #             else:
+    #                 diagnoal.append(self.partial_hess_hub_sum(i, j))
+    #     Hess_half = self.fill_upper_diag(tringular)
+    #     return Hess_half.T + Hess_half + np.diag(diagnoal)
 
     def hess_product_p(self, p):
         '''Newton CG A*p_k'''
-        hd = []
-        for i in range(len(p)): # each row of vector Hess*d
-            hd_i = 0
-            for k in range(len(p)):  # to sum up calculate each row
-                hd_i += self.partial_hess_hub_sum(i, k)* p[k]
-            hd.append(hd_i)
-        return np.array(hd).reshape((-1,1)) + p
+        n, d = self.X.shape
+        for i in range(len(self.X)): # each d rows of vector Hess*d
+            for k in range(len(self.X)):  # sum up to calculate each d rows
+                if k == 0:
+                    hd_i = np.dot(self.partial_hess_hub_sum(i, k), p[k*d : (k+1)*d])
+                else:
+                    hd_i = np.concatenate((np.dot(self.partial_hess_hub_sum(i, k), p[k*d : (k+1)*d])))
+        if i == 0:
+            pass
+        else:
+            pass
+        return #np.array(hd).reshape((-1,1)) + p
         
 
     def obj_func(self):
@@ -339,7 +391,6 @@ class ObjFunc():
     #     return first_item_hess + second_item_hess
 
 
-
 #%% Test sample
 if __name__ == "__main__":
     a1 = self_generate_cluster(n=5, sigma=1, c = [1,1])
@@ -354,7 +405,8 @@ if __name__ == "__main__":
 #%% test
 X = np.array([[0,0],[1,2],[3,5],[4,3]])
 a = np.array([[1,1],[1,1],[2,2],[2,2]])
-f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
+coef = grad_hub_coef(X)
+f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=1, if_use_weight=True)
 
 grad = f.grad_hub_sum_pairwise()
 

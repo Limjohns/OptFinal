@@ -63,7 +63,7 @@ def direction_check(obj, d):
     else:
         return False
 
-def newton_glob(obj, s, sigma, gamma, tol):
+def newton_cg(obj, s, sigma, gamma, tol):
   
     iteration = 0
     grad_x = obj.grad_obj_func()
