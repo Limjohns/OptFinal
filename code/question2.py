@@ -208,7 +208,6 @@ def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol, logname='AGM'):
 if __name__ == "__main__":
     t1 = time.time()
     delta = 1e-3
-
     lam   = 0.05
     tol   = 1e-3
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
@@ -242,3 +241,45 @@ if __name__ == "__main__":
     n2 = 100
     收敛，迭代1711次，耗时3889s
     '''
+#%% AGM_armijo
+def armijo2(s, sigma, gamma, y_k, a, delta, coef, lam, if_use_weight):
+    alpha = s
+    obj_1 = ObjFunc(y_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
+    d = -obj_1.grad_obj_func()
+    obj_2 = ObjFunc(y_k+alpha*d, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
+    while obj_2.obj_func() > obj_1.obj_func() + gamma*alpha*(np.dot(-d.reshape(-1,1).T, d.reshape(-1, 1))):
+        alpha = sigma*alpha
+        obj_2 = ObjFunc(y_k + alpha * d, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
+    return alpha
+
+def AGM_armijo(lam, delta, x_k, a, coef, if_use_weight, tol, s, sigma, gamma):
+    # alpha = s
+    t_k_1 = 1
+    iteration = 0
+    x_k_1 = x_k
+    obj = ObjFunc(x_k, a, delta = delta, grad_coef=coef, lam = lam, if_use_weight = if_use_weight)
+    grad_x = obj.grad_obj_func()
+
+    while obj.norm_sum_squ(grad_x, squ=False) > tol:
+        t1 = time.time()
+        beta_k = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
+        t_k_1 = 0.5*(1+(1+4*t_k_1**2)**0.5)
+        y_k = x_k + beta_k*(x_k - x_k_1)
+        obj = ObjFunc(y_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
+        x_k_1 = x_k
+        alpha = armijo2(s, sigma, gamma, y_k, a, delta, coef, lam, if_use_weight)
+        x_k = y_k - alpha*(obj.grad_obj_func())
+        iteration += 1
+        obj = ObjFunc(x_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
+        grad_x = obj.grad_obj_func()
+        print('iteration: ', iteration,
+              # '\nbeta_k: ', beta_k,
+              # '\nt_k_1: ', t_k_1,
+              # '\ny_k: ', y_k,
+              # '\nx_k: ', x_k,
+              # '\ngrad: ', grad_x,
+              '\nnorm of grad: ', obj.norm_sum_squ(grad_x, squ=False),
+              '\nobj_value: ', obj.obj_func(),
+              '\ntime consuming: ', time.time()-t1)
+
+    return x_k
