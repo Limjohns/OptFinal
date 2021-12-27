@@ -43,13 +43,12 @@ def pickle_write(data, filenm, folder='AGM1'):
     with open('result/' + folder + '/' + filenm + ".pkl", "wb") as f:
         pickle.dump(data, f)
 
-def pickle_read(data, filenm, folder='AGM1'):
+def pickle_read(filenm, folder='AGM1'):
     with open('result/' + folder + '/' + filenm + ".pkl", "rb") as f:
         out = pickle.load(f)
     return out
 
 def log_read(logname = 'AGM'):
-
     path = str(os.getcwd()) + '\\log\\' + logname + '.log'
     with open(path) as f:
         records = []
@@ -65,15 +64,24 @@ def log_read(logname = 'AGM'):
     df.columns = ['iteration','Norm_grad','Obj_val','time_consuming']
     return pd.DataFrame(all_rec)
 
-def armijo(d, s, sigma, gamma, x_k, a, coef, delta, lam, if_use_weight):
-    alpha = s
-    obj_1 = ObjFunc(X=x_k, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=if_use_weight)
-    obj_2 = ObjFunc(X=x_k+alpha*d, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=if_use_weight)
-    while obj_2.obj_func() > obj_1.obj_func()+gamma*alpha*(np.dot((-obj_1.grad_obj_func().reshape(-1, 1).T),d.reshape(-1, 1))):
-        alpha = alpha * sigma
-        obj_2 = ObjFunc(X=x_k+alpha*d, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=if_use_weight)
-    return alpha, obj_2
 
+def armijo(d, obj, s, sigma, gamma):
+    alpha = s
+    obj_2 = ObjFunc(X=obj.X+alpha*d
+                    ,a=obj.a
+                    ,grad_coef=obj.grad_coef
+                    ,delta=obj.delta
+                    ,lam=obj.lam
+                    ,if_use_weight=obj.if_use_weight)
+    while obj_2.obj_func() > obj.obj_func()+gamma*alpha*(np.dot((-obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1))):
+        alpha = alpha * sigma
+        obj_2 = ObjFunc(X=obj.X+alpha*d
+                        ,a=obj.a
+                        ,grad_coef=obj.grad_coef
+                        ,delta=obj.delta
+                        ,lam=obj.lam
+                        ,if_use_weight=obj.if_use_weight)    
+    return alpha, obj_2
 
 #%% Newton-CG method
 def cg(obj, grad, tol, maxiter=10):
@@ -113,10 +121,9 @@ def direction_check(d, grad):
     else:
         return False
 
-
 def newton_cg(obj, s, sigma, gamma, tol):
-    iteration = 0
-    grad_x = obj.grad_obj_func()
+    iteration   = 0
+    grad_x      = obj.grad_obj_func()
     grad_x_norm = obj.norm_sum_squ(grad_x, squ=False)
     
     while grad_x_norm > tol and iteration < 5000:
@@ -124,7 +131,7 @@ def newton_cg(obj, s, sigma, gamma, tol):
         
         # CG direction d
         cg_tol = min(1, grad_x_norm**0.1) * grad_x_norm
-        d = cg(obj, grad=grad_x, tol=cg_tol)
+        d      = cg(obj, grad=grad_x, tol=cg_tol)
         # check if is descent direction
         if direction_check(d, grad_x):
             # use CG solutions as direction
@@ -134,13 +141,13 @@ def newton_cg(obj, s, sigma, gamma, tol):
             d = -grad_x
             
         # choose step size
-        alpha, obj = armijo(d=d, s=s, sigma=sigma, gamma=gamma, x_k=obj.X, a=obj.a, coef=obj.grad_coef, delta=obj.delta, lam=obj.lam, if_use_weight=obj.if_use_weight)
+        alpha, obj  = armijo(d, obj, s=s, sigma=sigma, gamma=gamma)
         
         # update iterating parameters
-        grad_x = obj.grad_obj_func()
+        grad_x      = obj.grad_obj_func()
         grad_x_norm = obj.norm_sum_squ(grad_x, squ=False)
         
-        print(
+        print(  
             "Iteration:",    iteration, 
             "\nnorm of grad:", grad_x_norm,
             )
@@ -218,8 +225,8 @@ if __name__ == "__main__":
     # AGM(4, lam, delta, X, a, coef, False, tol)
     n1 = 100
     n2 = 100
-    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
-    X = np.array([[2,2] for i in np.arange(n1+n2)]) # initial point
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[10,10])
+    X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
     coef = grad_hub_coef(X)
     x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol, logname='AGM')
     f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=True)
