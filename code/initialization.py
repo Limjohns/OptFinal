@@ -391,17 +391,14 @@ class ObjFunc():
     def hess_product_p(self, p):
         '''Newton CG A*p_k'''
         n, d = self.X.shape
+        Ap = []
         for i in range(len(self.X)): # each d rows of vector Hess*d
+            hd_i = 0
             for k in range(len(self.X)):  # sum up to calculate each d rows
-                if k == 0:
-                    hd_i = np.dot(self.partial_hess_hub_sum(i, k), p[k*d : (k+1)*d])
-                else:
-                    hd_i = np.concatenate((np.dot(self.partial_hess_hub_sum(i, k), p[k*d : (k+1)*d])))
-        if i == 0:
-            pass
-        else:
-            pass
-        return #np.array(hd).reshape((-1,1)) + p
+                hd_i += np.dot(self.partial_hess_hub_sum(i, k), p[k*d : (k+1)*d])
+            Ap.append(hd_i)
+        Ap = np.stack(Ap).reshape(-1,1)
+        return Ap + p
         
 
     def obj_func(self):
