@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+o#!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 '''
 @File    :   initialization.py
@@ -110,6 +110,8 @@ def grad_hub_coef(X):
         row[loc_1_start:loc_1_end] = 1
         rows.append(row)
     return np.stack(rows)
+
+
 
 #%%  objective function class
 class ObjFunc():
@@ -391,7 +393,7 @@ class ObjFunc():
     def hess_product_p(self, p):
         '''Newton CG A*p_k'''
         n, d = self.X.shape
-        p = p.reshape(-1,1)
+        p = p.reshape(n,d)
         Ap = []
         for i in range(n): # each d rows of vector Hess*d
             hd_i = np.zeros((d,1))
