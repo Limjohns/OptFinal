@@ -14,6 +14,8 @@ from initialization import ObjFunc
 import numpy as np 
 import pandas as pd
 import time
+import logging
+
 #%% 
 # a = load_dataset(dataset='wine')
 # a1 = self_generate_cluster(n=100, sigma=1, c = [1,1])
@@ -22,6 +24,23 @@ import time
 #
 # X  = np.array([[0,0] for i in np.arange(200)])
 
+def my_custom_logger(logger_name, level=logging.INFO):
+    """
+    Method to return a custom logger with the given name and level
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    format_string = ("%(asctime)s | %(levelname)s | %(message)s")
+    log_format = logging.Formatter(fmt=format_string,datefmt='%Y-%m-%d %A %H:%M:%S')
+    # Creating and adding the console handler
+    # console_handler = logging.StreamHandler(sys.stdout)
+    # console_handler.setFormatter(log_format)
+    # logger.addHandler(console_handler)
+    # Creating and adding the file handler
+    file_handler = logging.FileHandler(logger_name, mode='a')
+    file_handler.setFormatter(log_format)
+    logger.addHandler(file_handler)
+    return logger
 
 delta=1e-3
 lam=1
@@ -30,6 +49,37 @@ lam=1
 # fx.obj_func()
 # %% accelerated gradient method 
 
+def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
+
+    alpha = 1/(1+n*lam/delta)
+    t_k_1 = 1
+    iteration = 0
+    x_k_1 = x_k
+    obj = ObjFunc(x_k, a, delta = delta, lam = lam, if_use_weight = if_use_weight)
+    grad_x = obj.grad_obj_func()
+
+    while obj.norm_sum_squ(grad_x, squ=False) > tol:
+        t1 = time.time()
+        beta_k = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
+        t_k_1 = 0.5*(1+(1+4*t_k_1**2)**0.5)
+        y_k = x_k + beta_k*(x_k - x_k_1)
+        obj = ObjFunc(y_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
+        x_k_1 = x_k
+        x_k = y_k - alpha*(obj.grad_obj_func())
+        iteration += 1
+        obj = ObjFunc(x_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
+        grad_x = obj.grad_obj_func()
+        print('iteration: ', iteration,
+              # '\nbeta_k: ', beta_k,
+              # '\nt_k_1: ', t_k_1,
+              # '\ny_k: ', y_k,
+              # '\nx_k: ', x_k,
+              # '\ngrad: ', grad_x,
+              '\nnorm of grad: ', obj.norm_sum_squ(grad_x, squ=False),
+              '\nobj_value: ', obj.obj_func(),
+              '\ntime consuming: ', time.time()-t1)
+
+    return x_k
 
 
 #%% Newton-CG method
@@ -116,38 +166,7 @@ def newton_cg(obj, s, sigma, gamma, tol):
         print(X)
     return X
 
-def AGM(n, lam, delta, x_k, a, if_use_weight, tol):
-
-    alpha = 1/(1+n*lam/delta)
-    t_k_1 = 1
-    iteration = 0
-    x_k_1 = x_k
-    obj = ObjFunc(x_k, a, delta = delta, lam = lam, if_use_weight = if_use_weight)
-    grad_x = obj.grad_obj_func()
-
-    while obj.norm_sum_squ(grad_x, squ=False) > tol:
-        t1 = time.time()
-        beta_k = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
-        t_k_1 = 0.5*(1+(1+4*t_k_1**2)**0.5)
-        y_k = x_k + beta_k*(x_k - x_k_1)
-        obj = ObjFunc(y_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
-        x_k_1 = x_k
-        x_k = y_k - alpha*(obj.grad_obj_func())
-        iteration += 1
-        obj = ObjFunc(x_k, a, delta=delta, lam=lam, if_use_weight=if_use_weight)
-        grad_x = obj.grad_obj_func()
-        print('iteration: ', iteration,
-              # '\nbeta_k: ', beta_k,
-              # '\nt_k_1: ', t_k_1,
-              # '\ny_k: ', y_k,
-              # '\nx_k: ', x_k,
-              # '\ngrad: ', grad_x,
-              '\nnorm of grad: ', obj.norm_sum_squ(grad_x, squ=False),
-              '\nobj_value: ', obj.obj_func(),
-              '\ntime consuming: ', time.time()-t1)
-
-    return x_k
-
+#%% Run
 if __name__ == "__main__":
     t1 = time.time()
     delta = 1e-3
