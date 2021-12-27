@@ -111,18 +111,63 @@ def grad_hub_coef(X):
         rows.append(row)
     return np.stack(rows)
 
-
+# weight matrix
+def get_weights(a, topnum = 2):
+    def norm_dist(a_i, a_j=0):
+        d = a_i - a_j
+        if len(d.shape) == 1:
+            d = np.array([d])
+        res = res = np.sum(np.einsum('ij,ij->i',d,d))
+        return res
+    
+    def triangular(a):
+        n = int(np.sqrt(len(a)*2))+1
+        mask = np.tri(n,dtype=bool, k=-1) # or np.arange(n)[:,None] > np.arange(n)
+        out = np.zeros((n,n),dtype=np.float32)
+        out[mask] = a
+        return out
+    
+    def get_full_weight_array(a):
+        weights_list = []
+        for i in range(len(a)):
+            for j in range(i+1, len(a)):
+                weight_ij = np.exp(-0.5*norm_dist(a[i], a[j]))
+                weights_list.append(weight_ij)
+        weights = triangular(weights_list)
+        return weights.T + weights
+    
+    def top_k(x,k):
+        ind=np.argpartition(x,[i for i in range(k)])[:k]
+        return ind[np.argsort(x[ind])]
+    
+    def weight_topk(weights_arr, top_num = topnum):
+        weight_df = pd.DataFrame(weights_arr)
+        return np.apply_along_axis(lambda x: top_k(x,top_num+1),0,weight_df.values)[1:]
+    
+    def weight_mask(weights_arr, top_num=topnum):
+        loc = weight_topk(weights_arr, top_num)
+        n = len(weights_arr)
+        res = np.zeros((n, n))
+        for i in range(n):
+            res[loc[:,i], i] = weights_arr[loc[:,i], i]
+        return res
+    
+    full_w_arr = get_full_weight_array(a)
+    
+    return weight_mask(full_w_arr, topnum)
 
 #%%  objective function class
 class ObjFunc():
     '''Objective Function Class'''
-    def __init__(self, X, a, grad_coef, delta = 1e-3, lam = 1, if_use_weight = False):
+    def __init__(self, X, a, grad_coef, weights_mat=None, delta = 1e-3, lam = 1, if_use_weight = False):
         self.X             = X
         self.a             = a
         self.delta         = delta
         self.lam           = lam 
         self.if_use_weight = if_use_weight
         self.grad_coef     = grad_coef
+        if self.if_use_weight:
+            self.weights_mat = weights_mat
 
     def norm_sum_squ(self, a,x=0,squ=True):
         """
@@ -208,7 +253,7 @@ class ObjFunc():
             return (y_norm**2*np.eye(len(y)) - np.dot(y,y.T)) / y_norm**3  #return matrix
         
 
-    def weight(self, i, j, k=5):
+    def weight(self, i, j):
         '''
         Calculate the Weights in the 2nd term
         
@@ -227,10 +272,7 @@ class ObjFunc():
         '''
 
         if self.if_use_weight:
-            if abs(i-j) <= k:
-                return np.exp(-0.5*self.norm_sum_squ(self.a[i], self.a[j], squ=True))
-            else:
-                return 0
+            return self.weights_mat[i,j]
         else:
             return 1
 
@@ -393,7 +435,7 @@ class ObjFunc():
     def hess_product_p(self, p):
         '''Newton CG A*p_k'''
         n, d = self.X.shape
-        p = p.reshape(n,d)
+        p = p.reshape(n*d,1)
         Ap = []
         for i in range(n): # each d rows of vector Hess*d
             hd_i = np.zeros((d,1))
@@ -455,7 +497,8 @@ if __name__ == "__main__":
 X = np.array([[0,0],[1,2],[3,5],[4,3]])
 a = np.array([[1,1],[1,1],[2,2],[2,2]])
 coef = grad_hub_coef(X)
-f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=1, if_use_weight=False)
+weights = get_weights(a, 2)
+f = ObjFunc(X = X, a = a, grad_coef=coef, weights_mat=weights, delta=1e-3, lam=1, if_use_weight=True)
 
 # grad = f.grad_hub_sum_pairwise()
 

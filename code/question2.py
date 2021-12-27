@@ -217,7 +217,7 @@ if __name__ == "__main__":
     t1 = time.time()
     delta = 1e-3
     lam   = 0.05
-    tol   = 1e-3
+    tol   = 0.5
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
     # coef = grad_hub_coef(X)
