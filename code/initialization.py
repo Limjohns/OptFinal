@@ -251,6 +251,7 @@ class ObjFunc():
     def partial_grad_hub_sum(self,i):
         '''
         Partial gradient of every rows in the gradient vector
+
         Parameters 
         ----------
         i : index of variables to be derived, int
@@ -321,6 +322,7 @@ class ObjFunc():
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
 
+
     # def fill_upper_diag(self, X):
     #     '''
     #     convert a list to upper diagonal
@@ -356,6 +358,35 @@ class ObjFunc():
     #                 diagnoal.append(self.partial_hess_hub_sum(i, j))
     #     Hess_half = self.fill_upper_diag(tringular)
     #     return Hess_half.T + Hess_half + np.diag(diagnoal)
+    def triangular_hess_hub_sum(self):
+        
+        (n,d) = self.X.shape
+        
+        row_hess_list = []
+        for i in range(0, n):
+            row_hess = [np.zeros((d, (i+1)*d))]
+            for j in range(i+1 , n):
+                row_hess.append(self.partial_hess_hub_sum(i, j))
+            row_hess_list.append(np.concatenate(row_hess,axis = 1))
+        full_mat = np.concatenate(row_hess_list)
+        
+        return full_mat
+
+
+    def hess_hub_sum_pairwise(self):
+        '''Get the full Hessian Matrix'''
+        diagnoal  = []
+        for i in range(0, len(self.X)):
+            for j in range(i, len(self.X)):
+                if i != j:
+                    pass 
+                else:
+                    diagnoal.append(self.partial_hess_hub_sum(i, j))
+        diagnoal = np.concatenate(diagnoal)
+        
+        Hess_half = self.triangular_hess_hub_sum()
+        return Hess_half.T + Hess_half + diagnoal
+
 
     def hess_product_p(self, p):
         '''Newton CG A*p_k'''
@@ -393,9 +424,21 @@ class ObjFunc():
 
 #%% Test sample
 if __name__ == "__main__":
-    a1 = self_generate_cluster(n=5, sigma=1, c = [1,1])
-    a2 = self_generate_cluster(n=5,  sigma=2, c = [3,4])
-    a = np.concatenate((a1,a2),axis=0)
+    # a1 = self_generate_cluster(n=5, sigma=1, c = [1,1])
+    # a2 = self_generate_cluster(n=5,  sigma=2, c = [3,4])
+    # a  = np.concatenate((a1,a2),axis=0)
+    #
+    # X  = np.array([[0,0] for i in np.arange(200)])
+
+    X = np.array([[0, 0], [4, 3], [2, 5], [6, 6]])
+    a = np.array([[2, 2], [3, 3], [3, 3], [2, 2]])
+    f = ObjFunc(X=X, a=a, delta=1e-3, lam=1, if_use_weight=True)
+
+    fx = ObjFunc(X=X, a=a, delta=1e-3, lam=1)
+    print('norm: ', fx.norm_sum_squ(a))
+    print('huber:', fx.hub(X[1], X[2]))
+    print('gradient huber: ', fx.grad_hub(X[1], X[2]))
+    print('hessian huber  : ', fx.hess_hub(X[1], X[2]))
 
     X  = np.array([[0,0] for i in np.arange(200)])
 
@@ -410,6 +453,9 @@ f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=1, if_use_weight=True)
 
 grad = f.grad_hub_sum_pairwise()
 
-# %%
-# test
-# test main - Lin
+
+f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
+f.partial_grad_hub_sum(i=1,j=1)
+grad  = f.grad_hub_sum_pairwise()
+upper = f.triangular_hess_hub_sum()
+
