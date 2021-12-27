@@ -125,6 +125,7 @@ def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol):
     grad_x = obj.grad_obj_func()
 
     while obj.norm_sum_squ(grad_x, squ=False) > tol:
+        t1 = time.time()
         beta_k = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
         t_k_1 = 0.5*(1+(1+4*t_k_1**2)**0.5)
         y_k = x_k + beta_k*(x_k - x_k_1)
@@ -141,13 +142,15 @@ def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol):
               # '\nx_k: ', x_k,
               # '\ngrad: ', grad_x,
               '\nnorm of grad: ', obj.norm_sum_squ(grad_x, squ=False),
-              '\nobj_value: ', obj.obj_func())
+              '\nobj_value: ', obj.obj_func(),
+              '\ntime consuming: ', time.time()-t1)
 
     return x_k
 #%%
 if __name__ == "__main__":
     t1 = time.time()
     delta = 1e-3
+
     lam   = 0.05
     tol   = 1e-3
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
@@ -163,3 +166,35 @@ if __name__ == "__main__":
     x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol)
     f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
     print('time consuming: ', time.time()-t1)
+
+    lam   = 0.005
+    tol   = 1e-3
+    # X = np.array([[1,1], [1,1], [2,2], [3,3]])
+    # X = np.array([[0, 0], [0, 0], [0, 0], [0, 0]])
+    # a = np.array([[1,1], [2,2],[3,3],[4,4]])
+    # AGM(4, lam, delta, X, a, False, tol)
+    n1 = 100
+    n2 = 100
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
+    X = np.array([[0,0] for i in np.arange(n1+n2)]) # initial point
+    AGM(n1+n2, lam, delta, X, a, False, tol)
+    f = ObjFunc(X=X, a=a, delta=delta, lam=lam, if_use_weight=False)
+    print('time consuming: ', time.time()-t1)
+
+    '''
+    测试 1
+    delta = 1e-3
+    lam   = 0.001
+    tol   = 1e-2
+    n1 = 100
+    n2 = 100
+    收敛，耗时20min，迭�?580+�?
+    
+    测试 2
+    delta = 1e-3
+    lam   = 0.005
+    tol   = 1e-2
+    n1 = 100
+    n2 = 100
+    收敛，迭�?1711次，耗时3889s
+    '''
