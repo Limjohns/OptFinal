@@ -153,7 +153,10 @@ if __name__ == "__main__":
     n2 = 100
     a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
     X = np.array([[0,0] for i in np.arange(n1+n2)]) # initial point
-    AGM(n1+n2, lam, delta, X, a, False, tol)
+    weights = get_weights(a, 5)
+    coef = grad_hub_coef(X)
+
+    x_k = AGM(n1+n2, lam, delta, X, a, False, tol)
 
     f = ObjFunc(X=X, a=a, delta=delta, lam=lam, if_use_weight=True)
     print('time consuming: ', time.time()-t1)
