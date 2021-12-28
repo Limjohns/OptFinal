@@ -129,12 +129,25 @@ def direction_check(d, grad):
         return False
 
 
-def newton_cg(obj, s, sigma, gamma, tol, config):
-    iteration = 0
-    grad_x = obj.grad_obj_func()
+def newton_cg(obj, s, sigma, gamma, tol, config, result_fold='NCG_'+time.strftime('%H_%M_%S', time.localtime()), logname = 'NCG_'+time.strftime('%H_%M_%S', time.localtime())):
+    # Create res pickle path folder
+    result_path = str(os.getcwd())+ '\\result\\' + result_fold
+    if not os.path.exists(result_path):    
+        os.makedirs(result_path)
+        print("--- Result will be: ", result_fold, ' --- ')
+    # Create log handle
+    logger_nw = my_custom_logger(str(os.getcwd()) + '\\log\\' + logname + '.log')
+
+
+    iteration   = 0
+    grad_x      = obj.grad_obj_func()
     grad_x_norm = obj.norm_sum_squ(grad_x, squ=False)
 
+    print('--- Newton CG Starting ---')
     while grad_x_norm > tol and iteration < 5000:
+        
+        pickle_write(data = obj.X, filenm=str(iteration), folder = result_fold)
+       
         iteration += 1
         t1 = time.time()
         # CG direction d
@@ -169,28 +182,35 @@ def newton_cg(obj, s, sigma, gamma, tol, config):
             "\ntime: ", time.time() - t1
         )
 
+        logger_nw.info('iter:'+str(iteration)+',grad:'+str(grad_x_norm)+
+                       ',alpha:'+str(alpha)+',time:'+str(time.time()-t1))
+
     return obj.X
 
 
 # %% test Newton-CG
 if __name__ == "__main__":
     t1 = time.time()
-    # X  = np.array([[1,1], [1,3], [2,2], [3,3]])
-    # a = np.array([[1,1],[1,6],[2,2],[2,2]])
+    X  = np.array([[1,1], [1,3], [2,2], [3,3]])
+    a = np.array([[1,1],[1,6],[2,2],[2,2]])
     # coef = grad_hub_coef(X)
     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
     # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
-    n1 = 50
-    n2 = 50 
-    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=1,c1=[1,1],c2=[10,10])
-    X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
-    # X = a + np.random.randn(len(a), 2)
-    if_use_weight = False
     
+    # n = [30, 20, 20]
+    # sigma = [2, 5, 4]
+    # c = [[1,1], [10,14], [-3,3]]
+    # a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
+
+    # X = a + np.random.randn(len(a), 2)
+
+    
+    if_use_weight = False
     if if_use_weight:
         weights   = get_weights(a, 5)
     else:
         weights = None
+
     grad_coef = grad_hub_coef(X)
     pair_coef = pairwise_coef(X, opera = '-') 
 
@@ -203,13 +223,13 @@ if __name__ == "__main__":
     # coef = grad_hub_coef(X)
     f = ObjFunc(X=X, a=a, mat_config = matrix_config, delta=1e-3, lam=0.05, if_use_weight=False)
 
-    x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1, config=matrix_config)
+    x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=0.01, config=matrix_config, result_fold='NCG'+time.strftime('%H_%M_%S', time.localtime()), logname = 'NCG'+time.strftime('%H_%M_%S', time.localtime()))
 
     print('time consuming: ', time.time()-t1)
 
 
 # %% accelerated gradient method
-def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('%H_%M_%S', time.gmtime()), result_fold = 'AGM_'+time.strftime('%H_%M_%S', time.gmtime())):
+def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('%H_%M_%S', time.localtime()), result_fold = 'AGM_'+time.strftime('%H_%M_%S', time.localtime())):
     
     result_path = str(os.getcwd())+ '\\result\\'+result_fold
     
