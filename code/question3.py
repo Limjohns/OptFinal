@@ -161,20 +161,3 @@ if __name__ == "__main__":
     f = ObjFunc(X=X, a=a, delta=delta, lam=lam, if_use_weight=True)
     print('time consuming: ', time.time()-t1)
 
-    '''
-    测试 1
-    delta = 1e-3
-    lam   = 0.001
-    tol   = 1e-2
-    n1 = 100
-    n2 = 100
-    收敛，587个循环结束，耗时1389s
-    
-    测试 2
-    delta = 1e-3
-    lam   = 0.005
-    tol   = 1e-2
-    n1 = 100
-    n2 = 100
-    收敛，1214个循环结束，耗时2833s
-    '''
