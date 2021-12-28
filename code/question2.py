@@ -67,7 +67,7 @@ def log_read(logname='AGM'):
     return pd.DataFrame(all_rec)
 
 
-+def armijo(d, obj, s, sigma, gamma,config):
+def armijo(d, obj, s, sigma, gamma,config):
     alpha = s
     obj_2 = ObjFunc(X           = obj.X+alpha*d
                    ,a          = obj.a
