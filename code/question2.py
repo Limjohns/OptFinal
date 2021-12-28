@@ -20,6 +20,44 @@ import os
 
 
 #%% 
+def norm_dist(a_i, a_j=0):
+    d = a_i - a_j
+    if len(d.shape) == 1:
+        d = np.array([d])
+    res = np.sum(np.einsum('ij,ij->i',d,d))
+    return res
+
+def triangular(a):
+    n = int(np.sqrt(len(a)*2))+1
+    mask = np.arange(n)[:,None] < np.arange(n)
+    out = np.zeros((n,n),dtype=np.float32)
+    out[mask] = a
+    return out
+
+def get_full_dist_array(a):
+    weights_list = []
+    for i in range(len(a)):
+        for j in range(i+1, len(a)):
+            weight_ij = norm_dist(a[i], a[j])
+            # weight_ij = int(str(i) + str(j))
+            weights_list.append(weight_ij)
+    weights = triangular(weights_list)
+    return weights.T
+
+from scipy.spatial import distance_matrix
+
+
+mat_dist1 = pd.DataFrame(distance_matrix(ss13, ss13))
+
+mat_dist = pd.DataFrame(get_full_dist_array(ss13))
+
+import timeit 
+
+mat_dist1 = pd.DataFrame(distance_matrix(ss13, ss13))
+
+
+
+#%%
 def my_custom_logger(logger_name, level=logging.INFO):
     """
     Method to return a custom logger with the given name and level

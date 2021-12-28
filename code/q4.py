@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+'''
+@File    :   question2.py
+@Time    :   2021/12/13 15:05:37
+@Author  :   Lin Junwei
+@Version :   1.0
+@Desc    :   processing file for question2
+'''
+
+#%%
+from initialization import load_dataset, self_generate_cluster, grad_hub_coef, self_dataset, get_weights
+from initialization import ObjFunc
+import numpy as np 
+import pandas as pd
+import time
+import logging
+import pickle
+import os 
+
+
+#%% 
+def my_custom_logger(logger_name, level=logging.INFO):
+    """
+    Method to return a custom logger with the given name and level
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    format_string = ("%(asctime)s | %(levelname)s | %(message)s")
+    log_format = logging.Formatter(fmt=format_string,datefmt='%Y-%m-%d | %H:%M:%S')
+    # Creating and adding the console handler
+    # console_handler = logging.StreamHandler(sys.stdout)
+    # console_handler.setFormatter(log_format)
+    # logger.addHandler(console_handler)
+    # Creating and adding the file handler
+    file_handler = logging.FileHandler(logger_name, mode='a')
+    file_handler.setFormatter(log_format)
+    logger.addHandler(file_handler)
+    return logger
+
+
+def pickle_write(data, filenm, folder='AGM1'):
+    with open('result/' + folder + '/' + filenm + ".pkl", "wb") as f:
+        pickle.dump(data, f)
+
+def pickle_read(filenm, folder='AGM1'):
+    with open('result/' + folder + '/' + filenm + ".pkl", "rb") as f:
+        out = pickle.load(f)
+    return out
+
+def log_read(logname = 'AGM'):
+    path = str(os.getcwd()) + '\\log\\' + logname + '.log'
+    with open(path) as f:
+        records = []
+        for line in f.readlines():
+            ls = line.split(' | ')
+            records.append(ls[-1].strip())
+        all_rec = []
+        for rec in records:
+            iter_rec = rec.split(',')
+            iter_rec = [rec.split(":")[-1] for rec in iter_rec]
+            all_rec.append(iter_rec)
+    df = pd.DataFrame(all_rec)
+    df.columns = ['iteration','Norm_grad','Obj_val','time_consuming']
+    return pd.DataFrame(all_rec)
+
+
+def armijo(d, obj, s, sigma, gamma):
+    alpha = s
+    obj_2 = ObjFunc(X=obj.X+alpha*d
+                    ,a=obj.a
+                    ,grad_coef=obj.grad_coef
+                    ,delta=obj.delta
+                    ,lam=obj.lam
+                    ,if_use_weight=obj.if_use_weight)
+    while obj_2.obj_func() > obj.obj_func()+gamma*alpha*(np.dot((-obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1)))[0][0]:
+        alpha = alpha * sigma
+        obj_2 = ObjFunc(X=obj.X+alpha*d
+                        ,a=obj.a
+                        ,grad_coef=obj.grad_coef
+                        ,delta=obj.delta
+                        ,lam=obj.lam
+                        ,if_use_weight=obj.if_use_weight)    
+    return alpha, obj_2
+
+
+
+
+
+#%% accelerated gradient method 
+def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol, logname='SVGR'):
+    if if_use_weight:
+        weights = get_weights(a, 5)
+    else:
+        weights = None
+    alpha     = 1/(1+n*lam/delta)
+    t_k_1     = 1
+    iteration = 0
+    x_k_1     = x_k
+    obj       = ObjFunc(x_k, a, delta = delta, grad_coef=coef, weights_mat=weights, lam = lam, if_use_weight = if_use_weight)
+    grad_x    = obj.grad_obj_func()
+    
+    
+    logger = my_custom_logger(str(os.getcwd()) + '\\log\\' + logname + '.log')
+
+    while obj.norm_sum_squ(grad_x, squ=False) > tol:
+        
+        pickle_write(data=x_k, filenm=str(iteration))
+
+        t1         = time.time()
+        beta_k     = (t_k_1-1)/(0.5*(1+(1+4*t_k_1**2)**0.5))
+        t_k_1      = 0.5*(1+(1+4*t_k_1**2)**0.5)
+        y_k        = x_k + beta_k*(x_k - x_k_1)
+        obj        = ObjFunc(y_k, a, delta=delta, grad_coef=coef, weights_mat=weights, lam=lam, if_use_weight=if_use_weight)
+        x_k_1      = x_k
+        x_k        = y_k - alpha*(obj.grad_obj_func())
+        iteration += 1
+        obj        = ObjFunc(x_k, a, delta=delta, grad_coef=coef, weights_mat=weights, lam=lam, if_use_weight=if_use_weight)
+        grad_x     = obj.grad_obj_func()
+
+        
+        norm_grad  = obj.norm_sum_squ(grad_x, squ=False)
+        print('iteration: ', iteration,
+              # '\nbeta_k: ', beta_k,
+              # '\nt_k_1: ', t_k_1,
+              # '\ny_k: ', y_k,
+              # '\nx_k: ', x_k,
+              # '\ngrad: ', grad_x,
+              '\nnorm of grad: ', norm_grad,
+              '\nobj_value: ', obj.obj_func(),
+              '\ntime consuming: ', time.time()-t1)
+        
+        logger.info('iter:'+str(iteration)+',grad:'+str(norm_grad)+',value:'+str(obj.obj_func())+',time:'+str(time.time()-t1))
+        
+    return x_k
+#%% test AGM
+if __name__ == "__main__":
+    t1 = time.time()
+    delta = 1e-3 
+    lam   = 0.05
+    tol   = 1
+    # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
+    # a = np.array([[1,1],[1,1],[2,2],[2,2]])
+    # coef = grad_hub_coef(X)
+    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+    # AGM(4, lam, delta, X, a, coef, False, tol)
+    n1 = 100
+    n2 = 100
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[10,10])
+    X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
+    coef = grad_hub_coef(X)
+    x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol, logname='AGM')
+    # f = ObjFunc(X=X, a=a, grad_coef=coef, weights_mat=weights, delta=delta, lam=lam, if_use_weight=True)
+    print('time consuming: ', time.time()-t1)
+    
