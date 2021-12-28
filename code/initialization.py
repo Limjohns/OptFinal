@@ -197,6 +197,7 @@ def pickle_read(filenm, folder='AGM1'):
     return out
 
 def log_read(logname = 'AGM'):
+    '''read log to dataframe'''
     path = str(os.getcwd()) + '\\log\\' + logname + '.log'
     with open(path) as f:
         records = []
@@ -208,10 +209,12 @@ def log_read(logname = 'AGM'):
             iter_rec = rec.split(',')
             iter_rec = [rec.split(":")[-1] for rec in iter_rec]
             all_rec.append(iter_rec)
-    df = pd.DataFrame(all_rec)
-    df.columns = ['iteration','Norm_grad','Obj_val','time_consuming']
-    return df
+        
+        col_name = [rc.split(":")[0] for rc in rec.split(',')]
 
+    df = pd.DataFrame(all_rec)
+    df.columns = col_name
+    return df
 
 def cluster_check(X, max = 20):
     K = range(1, max)

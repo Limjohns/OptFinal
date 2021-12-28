@@ -98,7 +98,7 @@ def picklesToPlot(label, folder = 'AGM1', L_R_U_D=[None, None, None, None] , max
     return array_ls
 #%% gradient convergence plot
 
-df = log_read(logname='weighted_AGM_delta1e-1_lam1e-1_tol1_wine(1).log')
+df = log_read(logname='weighted_AGM_delta1e-1_lam1e-1_tol1_wine(1)')
 
 
 plt.figure(figsize=(10, 6))
