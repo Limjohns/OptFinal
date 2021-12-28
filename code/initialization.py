@@ -15,6 +15,9 @@ import matplotlib.pyplot as plt
 import scipy.io
 import timeit
 from scipy.spatial import distance_matrix
+from sklearn.cluster import KMeans
+
+import pickle
 
 import os 
 from scipy.spatial.distance import cdist
