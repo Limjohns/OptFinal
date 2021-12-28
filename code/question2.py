@@ -263,6 +263,7 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'):
 #     # f = ObjFunc(X=X, a=a, grad_coef=coef, weights_mat=weights, delta=delta, lam=lam, if_use_weight=True)
 #     print('time consuming: ', time.time() - t1)
 
+<<<<<<< Updated upstream
     '''
     测试 1
     delta = 1e-3
@@ -325,3 +326,6 @@ def AGM_armijo(lam, delta, x_k, a, coef, if_use_weight, tol, s, sigma, gamma):
               '\ntime consuming: ', time.time() - t1)
 
     return x_k
+=======
+
+>>>>>>> Stashed changes
