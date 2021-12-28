@@ -9,7 +9,7 @@
 '''
 
 # %%
-from initialization import load_dataset, self_generate_cluster, self_dataset,  pickle_write, pickle_read, log_read, cluster_check
+from initialization import load_dataset, self_generate_cluster, self_dataset,  pickle_write, pickle_read, log_read
 from initialization import ObjFunc
 import numpy as np
 import pandas as pd
