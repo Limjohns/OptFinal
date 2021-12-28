@@ -14,13 +14,13 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import scipy.io
 import timeit
-from scipy.spatial import distance_matrix
 from sklearn.cluster import KMeans
-
 import pickle
-
-import os 
+import os
+from scipy.spatial import distance_matrix
 from scipy.spatial.distance import cdist
+import matplotlib.pyplot as plt
+
 #%% load data function
 
 def self_generate_cluster(n=100, sigma=1, c = [1,1]):
@@ -169,6 +169,7 @@ def get_weights(a, topnum = 5):
         return res
     
     return weight_mask(full_w_arr, topnum)
+
 
 ### read log and pickle
 def pickle_write(data, filenm, folder='AGM1'):
@@ -586,16 +587,3 @@ f = ObjFunc(X = X, a = a, grad_coef=coef, weights_mat=weights, delta=1e-3, lam=1
 # f.partial_grad_hub_sum(i=1,j=1)
 # grad  = f.grad_hub_sum_pairwise()
 # upper = f.triangular_hess_hub_sum()
-
-#%% hess matrix test
-n, d = X.shape
-mat1 = np.zeros((n,n*d))
-for i in range(n):
-    mat1[i:, i*d:(i+1)*d] = X[i] #each column
-    mat1[i, (i+1)*d:] = np.tile(X[i], (n-i-1,))#each row
-#%%
-n, d = X.shape
-mat2 = np.zeros((n,n*d))
-for i in range(n):
-    mat2[:i+1, i*d:(i+1)*d] = X[i]#each column
-    mat2[i, :i*d] = np.tile(X[i], (i,))#each row
