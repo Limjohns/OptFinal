@@ -20,7 +20,8 @@ import os
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 from sklearn import manifold
-#%%
+import random
+
 
 # %%
 def my_custom_logger(logger_name, level=logging.INFO):
@@ -306,20 +307,20 @@ if __name__ == "__main__":
     # AGM(4, lam, delta, X, a, coef, False, tol)
     
     # random points
-    # n = [30, 40, 20]
-    # sigma = [2, 5, 4]
-    # c = [[1,1], [10,14], [-3,3]]
-    # a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
-    # # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
-    # X = a + np.random.randn(len(a), 2)
-    # x_k = AGM(sum(n), lam, delta, X, a, False, tol,logname='AGM_1')
+    n = [30, 40, 20]
+    sigma = [2, 5, 4]
+    c = [[1,1], [10,14], [-3,3]]
+    a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
+    # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
+    X = a + np.random.randn(len(a), 2)
+    x_k = AGM(sum(n), lam, delta, X, a, False, tol,logname='AGM_1')
     
     
     # wine dataset
-    a, label = load_dataset('wine')
+    # a, label = load_dataset('wine')
     # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
     # a = manifold.Isomap(n_components=2).fit_transform(a)
-    X = np.zeros(a.shape)
+    # X = np.zeros(a.shape)
     x_k = AGM(a.shape[0], lam, delta, X, a, False, tol, logname='AGM_12')
     print('time consuming: ', time.time() - t1)
     
@@ -327,29 +328,60 @@ if __name__ == "__main__":
 
 # %% plot AGM
 
-filels = os.listdir(r'C:\Users\Lenovo\Desktop\OptFinal\code\result\AGM1')
-array_ls = []
-for file in filels:
-    file = file.split('.')[0]
-    df = pickle_read(file, folder='AGM1')
-    array_ls.append(df)
 
-def plot_points(arr, label):
-    c = pd.Series(label.reshape(-1,)).apply(lambda x: 'red' if x==1 else('blue' if x==2 else 'green'))
-    pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
-    # plt.xlim(-20,15)
-    plt.show()
+def picklesToPlot(label, folder = 'AGM1', max_pic=50, pic_folder = None, show_pic = False):
+    '''
+    Plot pickle
+    only feasible in 2D 
+
+    label      : label array of the 
+    folder     : folder in the result, default 'AGM1'
+    max_pic    : how many iterations to be plotted, default 50
+    pic_folder : if None then use the 'folder' name
+    show_pic   : True it will print on console
+
+    '''
+
+    if pic_folder is not None:
+        pass
+    else:
+        pic_folder = folder
     
-I = 0
-for arr in array_ls[:2]:
-    print(I, 'th-----------------------')
-    # arr = TSNE(n_components=2,random_state=0,init='pca').fit_transform(arr)
-    # arr = manifold.Isomap(n_components=2).fit_transform(arr)
-    plot_points(arr, label)
-    I +=1
+    pic_path = str(os.getcwd())+ '\\result\\' + pic_folder
+    if not os.path.exists(pic_path):    
+        os.makedirs(pic_path)
+        print("--- Pictures will be saved in : ", pic_path, ' --- ')
 
+    ### color dict ###
+    def generate_color(kind):
+        color_ls = ['r','g','b','#1e1e1e','y']
+        for i in range(kind):
+            color_ls.extend(["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])])
+        return color_ls 
 
-# a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
-# a = manifold.Isomap(n_components=2).fit_transform(a)
-plot_points(a, label)
+    categories = list(set(label.reshape(-1,).tolist()))
+    colors_ls  = generate_color(len(categories))[:len(categories)]
+    # color - categories mapping
+    color_dict = dict(zip(categories, colors_ls))
+    
+    c = pd.Series(label.reshape(-1,)).apply(lambda x: color_dict[x])
 
+    #### pickle read ####
+    filels = os.listdir(str(os.getcwd()) + '\\result\\' + folder)
+    array_ls = []
+
+    I = 0
+
+    for file in filels[:max_pic]:
+        file = file.split('.')[0]
+        df = pickle_read(file, folder = folder) # read pickles
+        array_ls.append(df)
+        # Plotting 
+        pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
+        plt.savefig(pic_path+'\\'+file+'.png')
+        if not show_pic:
+            print(I, 'th-----------------------')
+            plt.show()
+            I += 1
+    
+    return array_ls
