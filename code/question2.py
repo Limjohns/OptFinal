@@ -172,12 +172,12 @@ def cg(obj, grad, tol, maxiter=10):
     x = np.zeros((obj.X.size, 1))  # (nd, 1) x0
     r = grad  # (nd, 1) r0
     p = -r  # (nd, 1) p0
-    hess_pairwise = obj.hess_hub_pairwise()
+    hess_pairwise = obj.hess_hub_pairwise() #(nd, nd) hess matrix of xi-xj
     
     # iterate
     while obj.norm_sum_squ(r, squ=False) > tol and iternum <= maxiter:
         iternum += 1
-        hess_prod_p = obj.hess_product_p(p, hess_pairwise)  # (nd, 1) A*p0
+        hess_prod_p = obj.hess_product_p(hess_pairwise, p)  # (nd, 1) A*p0
         # check if pAp is positive to ensure the correctness of following calculations
         if np.dot(p.T, hess_prod_p) <= 0:
             break
@@ -265,20 +265,26 @@ def newton_cg(obj, s, sigma, gamma, tol, config, result_fold='NCG_'+time.strftim
 # %% test Newton-CG
 if __name__ == "__main__":
     t1 = time.time()
-    X  = np.array([[1,1], [1,3], [2,2], [3,3]])
-    a = np.array([[1,1],[1,6],[2,2],[2,2]])
-    # coef = grad_hub_coef(X)
-    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
-    # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
     
-    # n = [30, 20, 20]
-    # sigma = [2, 5, 4]
-    # c = [[1,1], [10,14], [-3,3]]
+    '''synthetic dataset'''
+    # n = [50, 40, 60]
+    # sigma = [2, 4, 3]
+    # c = [[1,1], [10,8], [-3,3]]
     # a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
-
+    # # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
     # X = a + np.random.randn(len(a), 2)
 
+    '''real datasets'''
+    a, label = load_dataset('wine')
     
+    #choose small batch
+    # np.random.seed(111)
+    # random_index = np.random.choice(len(a), 500, replace=False)
+    # a = a[random_index]
+    # label = label[random_index]
+    # del random_index
+    X = np.zeros(a.shape)
+
     if_use_weight = False
     if if_use_weight:
         weights   = get_weights(a, 5)
@@ -292,17 +298,23 @@ if __name__ == "__main__":
         'gradient' : grad_coef, 
         'weights'  : weights, 
         'pairwise' : pair_coef}
-
     
-    # coef = grad_hub_coef(X)
-    f = ObjFunc(X=X, a=a, mat_config = matrix_config, delta=1e-3, lam=0.05, if_use_weight=False)
 
-    x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=0.01, config=matrix_config, result_fold='NCG'+time.strftime('%H_%M_%S', time.localtime()), logname = 'NCG'+time.strftime('%H_%M_%S', time.localtime()))
+    f = ObjFunc(X=X, a=a, mat_config = matrix_config, delta=1e-1, lam=0.1, if_use_weight=False)
+    x_k = newton_cg(obj          =f
+                    , s          =1
+                    , sigma      =0.5
+                    , gamma      =0.1
+                    , tol        =1
+                    , config     =matrix_config
+                    , logname    ='bck_NCG_delta0.1_lam0.1_tol1_wine'
+                    , result_fold='bck_NCG_delta0.1_lam0.1_tol1_wine')
+
 
     print('time consuming: ', time.time()-t1)
 
 
-# %% accelerated gradient method
+# %% AGM
 def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('%H_%M_%S', time.localtime()), result_fold = 'AGM_'+time.strftime('%H_%M_%S', time.localtime())):
     
     result_path = str(os.getcwd())+ '\\result\\'+result_fold
@@ -313,9 +325,11 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('
     
     if if_use_weight:
         weights = get_weights(a, 5)
+        alpha = 1 / (1 + n * lam * weights.max() / delta)
     else:
         weights = None
-
+        # l2 norm correction delta
+        alpha = 1 / (1 + n * lam / delta)
 
     print('--- AGM Initializing ---')
     grad_coef = grad_hub_coef(X)
@@ -326,11 +340,7 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('
         'weights': weights,
         'pairwise': pair_coef}
     
-    # l2 norm correction delta
-    if if_use_weight:    
-        alpha = 1 / (1 + n * lam * weights.max() / delta)
-    else:
-        alpha = 1 / (1 + n * lam / delta)
+
     t_k_1 = 1
     iteration = 0
     x_k_1 = x_k
@@ -374,29 +384,33 @@ if __name__ == "__main__":
     t1 = time.time()
     # l2 norm correction
     delta = 0.1
-    lam   = 0.1
-    tol   = 1
+    lam   = 0.5
+    tol   = 0.1
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
     
-    # random points
-    n = [30, 40, 20]
-    sigma = [2, 5, 4]
-    c = [[1,1], [10,14], [-3,3]]
+    '''synthetic dataset'''
+    n = [50, 40, 60]
+    sigma = [2, 4, 3]
+    c = [[1,1], [10,8], [-3,3]]
     a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
     # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
     X = a + np.random.randn(len(a), 2)
-    # x_k = AGM(sum(n), lam, delta, X, a, True, tol, logname='weighted_AGM_delta1e-1_lam1e-1_tol1_3c', result_fold = 'weighted_AGM_delta1e-1_lam1e-1_tol1_3c')
+    x_k = AGM(sum(n), lam, delta, X, a, True, tol, logname='weighted_AGM_delta1e-1_lam0.5_tol1e-1_3c', result_fold = 'weighted_AGM_delta1e-1_lam0.5_tol1e-1_3c')
+
     
+    '''real dataset'''
+    # a, label = load_dataset('wine')
     
-    # real dataset
-    a, label = load_dataset('segment')
-    np.random.seed(111)
-    random_index = np.random.choice(len(a),1000,replace=False)
-    a = a[random_index]
-    label = label[random_index]
-    del random_index
-    X = np.zeros(a.shape)
-    x_k = AGM(a.shape[0], lam, delta, X, a, True, tol, logname='weighted_AGM_delta1e-1_lam1e-1_tol1_segment1000', result_fold = 'weighted_AGM_delta1e-1_lam1e-1_tol1_segment1000')
+    # #choose small batch
+    # # np.random.seed(111)
+    # # random_index = np.random.choice(len(a), 500, replace=False)
+    # # a = a[random_index]
+    # # label = label[random_index]
+    # # del random_index
+    
+    # X = np.zeros(a.shape)
+    # x_k = AGM(a.shape[0], lam, delta, X, a, True, tol, logname='weighted_AGM_delta1e-1_lam1e-1_tol1_wine', result_fold = 'weighted_AGM_delta1e-1_lam1e-1_tol1_wine')
+    
     print('time consuming: ', time.time() - t1)
-    
+
