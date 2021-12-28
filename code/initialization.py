@@ -88,17 +88,29 @@ def load_dataset(dataset = 'wine'):
 
     return data, label
 
-
-def mnius_coef(X):
+### pairwise difference/add matrix
+def pairwise_coef(X, opera = '-'):
     '''
     To Compute the pairwise differences
+    By left dot X in shape (n, d) => ((n*(n-1)/2), d)
 
-    By left dot X in shape (n, 1)  
-    
+    Parameter:
+    -------- 
+    X     : Data, in shape (n,d)      
+    opera : str, '-': difference, default
+                 '+': cumsum     
+
     Return: 
     --------
     np.array(row_ls) in shape [(n*(n-1)/2), n]
     '''
+    if opera == '-':
+        xj_opera = -1
+    elif opera == '+':
+        xj_opera = 1
+    else:
+        xj_opera = -1
+
     n, d = X.shape
     row_ls = []
     for i in range(n):        
@@ -108,7 +120,7 @@ def mnius_coef(X):
             row[j] = -1
             row_ls.append(row)
     return np.array(row_ls)
-
+### Gradient huber matrix
 def grad_hub_coef(X):
     '''
     To Compute huber gradient
@@ -213,15 +225,20 @@ def cluster_check(X, max = 20):
 #%%  objective function class
 class ObjFunc():
     '''Objective Function Class'''
-    def __init__(self, X, a, grad_coef, weights_mat=None, delta = 1e-3, lam = 1, if_use_weight = False):
+    def __init__(self, X, a, mat_config, delta = 1e-3, lam = 1, if_use_weight = False):
         self.X             = X
         self.a             = a
         self.delta         = delta
         self.lam           = lam 
         self.if_use_weight = if_use_weight
-        self.grad_coef     = grad_coef
+        
+        self.grad_coef     = mat_config['gradient']
+        self.pair_coef     = mat_config['pairwise']
+
         if self.if_use_weight:
-            self.weights_mat = weights_mat
+            self.weights_mat = mat_config['weights']
+        else: 
+            self.weights_mat = np.ones((a.shape[0],a.shape[0]))
 
     def norm_sum_squ(self, a,x=0,squ=True):
         """
@@ -383,17 +400,32 @@ class ObjFunc():
 
     def grad_hub_matrix(self):
         '''use matrix to calculate the gradient of the 2nd item'''
-        n, d = self.X.shape
-        xi_xj = []
-        weight_ij = []
-        for i in range(n):
-            for j in range(i+1,n):
-                xi_xj.append(self.X[i]-self.X[j])
-                weight_ij.append(self.weight(i,j))
-        xi_xj = np.stack(xi_xj)
-        weight_ij = np.array(weight_ij).reshape((-1,1))
+        
+        
+        #### new ########################
 
+        xi_xj     = np.dot(self.pair_coef, self.X) 
+        weight_ij = self.weights_mat[np.triu_indices(self.X.shape[0], k = 1)].reshape((-1,1))
+        
         grad_xi_xj = np.apply_along_axis(self.grad_hub, 1, xi_xj) * weight_ij
+
+
+        ### old #########################
+        # n, d = self.X.shape
+        # xi_xj = []
+        # weight_ij = []
+        # for i in range(n):
+        #     for j in range(i+1,n):
+        #         xi_xj.append(self.X[i]-self.X[j])
+        #         weight_ij.append(self.weight(i,j))
+        # xi_xj = np.stack(xi_xj)
+        # weight_ij = np.array(weight_ij).reshape((-1,1))
+        # grad_xi_xj = np.apply_along_axis(self.grad_hub, 1, xi_xj) * weight_ij
+        
+        # print(xi_xj)
+        # print(weight_ij)
+        # print(grad_xi_xj)
+        
         return np.dot(self.grad_coef, grad_xi_xj)
 
 
@@ -420,41 +452,6 @@ class ObjFunc():
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
 
-    # def fill_upper_diag(self, X):
-    #     '''
-    #     convert a list to upper diagonal
-    #     --- 
-
-    #     Example:
-    #     ----------
-    #     X = [1,2,3,4,5,6]
-    #     fill_lower_diag(X) 
-    #     ---> array([[0, 1, 2, 3],
-    #                 [0, 0, 4, 5],
-    #                 [0, 0, 0, 6],
-    #                 [0, 0, 0, 0]])
-
-    #     '''
-    #     n    = int(np.sqrt(len(X)*2))+1
-    #     # mask = np.arange(n)[:,None] < np.arange(n) # or np.tri(n,dtype=bool, k=-1)
-    #     mask = np.tri(n,dtype=bool, k=-1)
-
-    #     out  = np.zeros((n,n),dtype=int)
-    #     out[mask] = X
-    #     return out
-
-    # def hess_hub_sum_pairwise(self):
-    #     '''Get the full Hessian Matrix'''
-    #     diagnoal  = []
-    #     tringular = []
-    #     for i in range(0, len(self.X)):
-    #         for j in range(i, len(self.X)):
-    #             if i != j:
-    #                 tringular.append(self.partial_hess_hub_sum(i, j))
-    #             else:
-    #                 diagnoal.append(self.partial_hess_hub_sum(i, j))
-    #     Hess_half = self.fill_upper_diag(tringular)
-    #     return Hess_half.T + Hess_half + np.diag(diagnoal)
     def triangular_hess_hub_sum(self):
         
         (n,d) = self.X.shape
@@ -531,35 +528,35 @@ if __name__ == "__main__":
     #
     # X  = np.array([[0,0] for i in np.arange(200)])
 
-    X = np.array([[0, 0], [4, 3], [2, 5], [6, 6]])
-    a = np.array([[2, 2], [3, 3], [3, 3], [2, 2]])
-    f = ObjFunc(X=X, a=a, delta=1e-3, lam=1, if_use_weight=True)
+    # X = np.array([[0, 0], [4, 3], [2, 5], [6, 6]])
+    # a = np.array([[2, 2], [3, 3], [3, 3], [2, 2]])
+    # f = ObjFunc(X=X, a=a, delta=1e-3, lam=1, if_use_weight=True)
 
-    fx = ObjFunc(X=X, a=a, delta=1e-3, lam=1)
-    print('norm: ', fx.norm_sum_squ(a))
-    print('huber:', fx.hub(X[1], X[2]))
-    print('gradient huber: ', fx.grad_hub(X[1], X[2]))
-    print('hessian huber  : ', fx.hess_hub(X[1], X[2]))
+    # fx = ObjFunc(X=X, a=a, delta=1e-3, lam=1)
+    # print('norm: ', fx.norm_sum_squ(a))
+    # print('huber:', fx.hub(X[1], X[2]))
+    # print('gradient huber: ', fx.grad_hub(X[1], X[2]))
+    # print('hessian huber  : ', fx.hess_hub(X[1], X[2]))
 
-    X  = np.array([[0,0] for i in np.arange(200)])
+    # X  = np.array([[0,0] for i in np.arange(200)])
 
 
-    fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
+    # fx = ObjFunc(X = X, a = a, delta=1e-3, lam=1)
     
 #%% test
-X = np.array([[0,0],[1,2],[3,5],[4,3]])
-a = np.array([[1,1],[1,1],[2,2],[2,2]])
-coef = grad_hub_coef(X)
-weights = get_weights(a, 2)
-f = ObjFunc(X = X, a = a, grad_coef=coef, weights_mat=weights, delta=1e-3, lam=1, if_use_weight=True)
+    X = np.array([[0,0],[1,2],[3,5],[4,3]])
+    a = np.array([[1,1],[1,1],[2,2],[2,2]])
 
-# grad = f.grad_hub_sum_pairwise()
+    grad_coef = grad_hub_coef(X)
+    weights   = get_weights(a, 2)
+    pair_coef = pairwise_coef(X, opera = '-') 
 
+    matrix_config = {
+        'gradient' : grad_coef, 
+        'weights'  : weights, 
+        'pairwise' : pair_coef}
 
-# f = ObjFunc(X = X, a = a, delta=1e-3, lam=1, if_use_weight=True)
-# f.partial_grad_hub_sum(i=1,j=1)
-# grad  = f.grad_hub_sum_pairwise()
-# upper = f.triangular_hess_hub_sum()
+    f = ObjFunc(X = X, a = a, mat_config=matrix_config,delta=1e-3, lam=1, if_use_weight=True)
+    f.grad_hub_matrix()
 
-#%% hess matrix test
-
+# %%
