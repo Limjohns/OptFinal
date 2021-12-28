@@ -20,7 +20,7 @@ import os
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 from sklearn import manifold
-#%%
+# %%
 
 # %%
 def my_custom_logger(logger_name, level=logging.INFO):
@@ -224,43 +224,43 @@ def newton_cg(obj, s, sigma, gamma, tol, config, result_fold='NCG_'+time.strftim
 #
 #     print('time consuming: ', time.time()-t1)
 
-if __name__ == "__main__":
-    t1 = time.time()
-    X  = np.array([[1,1], [1,3], [2,2], [3,3]])
-    a = np.array([[1,1],[1,6],[2,2],[2,2]])
-    # coef = grad_hub_coef(X)
-    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
-    # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
-    
-    # n = [30, 20, 20]
-    # sigma = [2, 5, 4]
-    # c = [[1,1], [10,14], [-3,3]]
-    # a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
-
-    # X = a + np.random.randn(len(a), 2)
-
-    
-    if_use_weight = False
-    if if_use_weight:
-        weights   = get_weights(a, 5)
-    else:
-        weights = None
-
-    grad_coef = grad_hub_coef(X)
-    pair_coef = pairwise_coef(X, opera = '-') 
-
-    matrix_config = {
-        'gradient' : grad_coef, 
-        'weights'  : weights, 
-        'pairwise' : pair_coef}
-
-    
-    # coef = grad_hub_coef(X)
-    f = ObjFunc(X=X, a=a, mat_config = matrix_config, delta=1e-3, lam=0.05, if_use_weight=False)
-
-    x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=0.01, config=matrix_config, result_fold='NCG'+time.strftime('%H_%M_%S', time.localtime()), logname = 'NCG'+time.strftime('%H_%M_%S', time.localtime()))
-
-    print('time consuming: ', time.time()-t1)
+# if __name__ == "__main__":
+#     t1 = time.time()
+#     X  = np.array([[1,1], [1,3], [2,2], [3,3]])
+#     a = np.array([[1,1],[1,6],[2,2],[2,2]])
+#     # coef = grad_hub_coef(X)
+#     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
+#     # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
+#
+#     # n = [30, 20, 20]
+#     # sigma = [2, 5, 4]
+#     # c = [[1,1], [10,14], [-3,3]]
+#     # a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
+#
+#     # X = a + np.random.randn(len(a), 2)
+#
+#
+#     if_use_weight = False
+#     if if_use_weight:
+#         weights   = get_weights(a, 5)
+#     else:
+#         weights = None
+#
+#     grad_coef = grad_hub_coef(X)
+#     pair_coef = pairwise_coef(X, opera = '-')
+#
+#     matrix_config = {
+#         'gradient' : grad_coef,
+#         'weights'  : weights,
+#         'pairwise' : pair_coef}
+#
+#
+#     # coef = grad_hub_coef(X)
+#     f = ObjFunc(X=X, a=a, mat_config = matrix_config, delta=1e-3, lam=0.05, if_use_weight=False)
+#
+#     x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=0.01, config=matrix_config, result_fold='NCG'+time.strftime('%H_%M_%S', time.localtime()), logname = 'NCG'+time.strftime('%H_%M_%S', time.localtime()))
+#
+#     print('time consuming: ', time.time()-t1)
 
 
 
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('%H_%M_%S', time.localtime()), result_fold = 'AGM_'+time.strftime('%H_%M_%S', time.localtime())):
     
     # result_path = str(os.getcwd())+ '\\result\\'+result_fold
-    result_path = os.path.join(r'/Users/leongvan/Documents/GitHub/OptFinal/code/result', result_fold, )
+    result_path = os.path.join(r'/Users/leongvan/Documents/GitHub/OptFinal/code/result', result_fold, logname)
     
     if not os.path.exists(result_path):    
         os.makedirs(result_path)
@@ -280,7 +280,7 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('
         weights = None
 
 
-    print('--- AGM Initializing ---')
+    # print('--- AGM Initializing ---')
     grad_coef = grad_hub_coef(X)
     pair_coef = pairwise_coef(X, opera='-')
 
@@ -297,9 +297,9 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('
     obj = ObjFunc(x_k, a, delta=delta, mat_config=matrix_config, lam=lam, if_use_weight=if_use_weight)
     grad_x = obj.grad_obj_func()
 
-    logger = my_custom_logger(str(os.getcwd()) + '\\log\\' + logname + '.log')
+    logger = my_custom_logger(os.path.join(os.getcwd(), 'log', '{0}.log'.format(logname)))
 
-    print('--- AGM Starting ---')
+    # print('--- AGM Starting ---')
     while obj.norm_sum_squ(grad_x, squ=False) > tol:
         
         pickle_write(data=x_k, filenm=str(iteration), folder = result_fold)
@@ -316,26 +316,35 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('
         grad_x = obj.grad_obj_func()
 
         norm_grad = obj.norm_sum_squ(grad_x, squ=False)
-        print('iteration: ', iteration,
-              # '\nbeta_k: ', beta_k,
-              # '\nt_k_1: ', t_k_1,
-              # '\ny_k: ', y_k,
-              # '\nx_k: ', x_k,
-              # '\ngrad: ', grad_x,
-              '\nnorm of grad: ', norm_grad,
-              # '\nobj_value: ', obj.obj_func(),
-              '\ntime consuming: ', time.time() - t1)
+        # print('iteration: ', iteration,
+        #       # '\nbeta_k: ', beta_k,
+        #       # '\nt_k_1: ', t_k_1,
+        #       # '\ny_k: ', y_k,
+        #       # '\nx_k: ', x_k,
+        #       # '\ngrad: ', grad_x,
+        #       '\nnorm of grad: ', norm_grad,
+        #       # '\nobj_value: ', obj.obj_func(),
+        #       '\ntime consuming: ', time.time() - t1)
 
         logger.info('iter:'+str(iteration)+',grad:'+str(norm_grad)+',value:'+str(obj.obj_func())+',time:'+str(time.time()-t1))
 
-    return x_k
+    return x_k, iteration
+
 #%% test AGM
 if __name__ == "__main__":
     t1 = time.time()
     # l2 norm correction
     delta = 0.1
-    lam   = 0.1
+    lam   = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
     tol   = 1
+    n1 = 20
+    n2 = 20
+    a, syn_label = self_dataset(n=[n1, n2], sigma=[1, 2], c=[[1, 1], [2, 2]])
+    X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
+    for l in lam:
+        x_k, iteration = AGM(a.shape[0], l, delta, X, a, False, tol, logname='diff_lambda_n_40_tol_1_del_01')
+        print('-------------lambda: {0}, iteration: {1}-------------'.format(l, iteration))
+
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
     # coef = grad_hub_coef(X)
@@ -353,11 +362,12 @@ if __name__ == "__main__":
     
     
     # wine dataset
-    a, label = load_dataset('vowel')
-    # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
-    # a = manifold.Isomap(n_components=2).fit_transform(a)
-    X = np.zeros(a.shape)
-    x_k = AGM(a.shape[0], lam, delta, X, a, False, tol, logname='AGM_12_vowel')
+    # a, label = load_dataset('segment')
+    # a = a[:1000]
+    # # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
+    # # a = manifold.Isomap(n_components=2).fit_transform(a)
+    # X = np.zeros(a.shape)
+    # x_k = AGM(a.shape[0], lam, delta, X, a, False, tol, logname='AGM_12_testForSegment')
     print('time consuming: ', time.time() - t1)
     
 
