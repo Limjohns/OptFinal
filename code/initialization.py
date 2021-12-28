@@ -39,7 +39,7 @@ def self_generate_cluster(n=100, sigma=1, c = [1,1]):
     c1 = np.column_stack(c_tuple)
     return c1
 
-def self_dataset(n1=100,n2=100,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3]):
+def self_dataset(n=[100],sigma=[1],c=[[1,1]]):
     """
     Parameters 
     ---------- 
@@ -53,12 +53,15 @@ def self_dataset(n1=100,n2=100,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3]):
     alllabel.T: np.array in shape (total samples, 1)
 
     """
-    set1 = self_generate_cluster(n = n1, sigma = sigma1, c = c1)
-    set2 = self_generate_cluster(n = n2, sigma = sigma2, c = c2)
-    label1 = np.array([[0 for i in range(0,n1)]])
-    label2 = np.array([[1 for i in range(0,n2)]])
-    allset = np.concatenate((set1,set2),axis=0)
-    alllabel = np.concatenate((label1,label2),axis=1)
+    for i in range(len(sigma)):
+        set_i = self_generate_cluster(n = n[i], sigma = sigma[i], c = c[i])
+        label_i = np.array([[i for j in range(0,n[i])]])
+        if i  == 0:
+            allset = set_i
+            alllabel = label_i
+        else:
+            allset = np.concatenate((allset,set_i),axis=0)
+            alllabel = np.concatenate((alllabel,label_i),axis=1)
 
     return allset, alllabel.T
 
@@ -299,6 +302,7 @@ class ObjFunc():
         '''
         y      = xi - xj
         y_norm = self.norm_sum_squ(y,0,squ=False)
+        # l2 norm correction =
         if y_norm <= self.delta:
             return y/self.delta
         elif y_norm > self.delta:

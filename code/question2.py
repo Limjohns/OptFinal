@@ -17,7 +17,10 @@ import time
 import logging
 import pickle
 import os
-
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
+from sklearn import manifold
+#%%
 
 # %%
 def my_custom_logger(logger_name, level=logging.INFO):
@@ -25,7 +28,7 @@ def my_custom_logger(logger_name, level=logging.INFO):
     Method to return a custom logger with the given name and level
     """
     logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
+    logger.setLevel(level) 
     format_string = ("%(asctime)s | %(levelname)s | %(message)s")
     log_format = logging.Formatter(fmt=format_string, datefmt='%Y-%m-%d | %H:%M:%S')
     # Creating and adding the console handler
@@ -67,7 +70,7 @@ def log_read(logname='AGM'):
     return pd.DataFrame(all_rec)
 
 
-+def armijo(d, obj, s, sigma, gamma,config):
+def armijo(d, obj, s, sigma, gamma,config):
     alpha = s
     obj_2 = ObjFunc(X           = obj.X+alpha*d
                    ,a          = obj.a
@@ -219,7 +222,8 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'):
         'gradient': grad_coef,
         'weights': weights,
         'pairwise': pair_coef}
-
+    
+    # l2 norm correction delta
     alpha = 1 / (1 + n * lam / delta)
     t_k_1 = 1
     iteration = 0
@@ -231,7 +235,7 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'):
 
     print('--- AGM Starting ---')
     while obj.norm_sum_squ(grad_x, squ=False) > tol:
-        # pickle_write(data=x_k, filenm=str(iteration))
+        pickle_write(data=x_k, filenm=str(iteration))
 
         t1 = time.time()
         beta_k = (t_k_1 - 1) / (0.5 * (1 + (1 + 4 * t_k_1 ** 2) ** 0.5))
@@ -261,106 +265,61 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'):
 #%% test AGM
 if __name__ == "__main__":
     t1 = time.time()
-    delta = 1e-1
-    lam   = 0.05
+    # l2 norm correction
+    delta = 0.1
+    lam   = 0.1
     tol   = 1
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
     # coef = grad_hub_coef(X)
     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
     # AGM(4, lam, delta, X, a, coef, False, tol)
-    n1 = 300
-    n2 = 200
-    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[5,7],c2=[10,10])
-    X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
-
-    x_k = AGM(n1+n2, lam, delta, X, a, True, tol,logname='AGM_1')
-    # f = ObjFunc(X=X, a=a, grad_coef=coef, weights_mat=weights, delta=delta, lam=lam, if_use_weight=True)
+    
+    # random points
+    # n = [30, 40, 20]
+    # sigma = [2, 5, 4]
+    # c = [[1,1], [10,14], [-3,3]]
+    # a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
+    # # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
+    # X = a + np.random.randn(len(a), 2)
+    # x_k = AGM(sum(n), lam, delta, X, a, False, tol,logname='AGM_1')
+    
+    
+    # wine dataset
+    a, label = load_dataset('wine')
+    # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
+    a = manifold.Isomap(n_components=2).fit_transform(a)
+    X = np.zeros(a.shape)
+    x_k = AGM(a.shape[0], lam, delta, X, a, False, tol,logname='AGM_1')
     print('time consuming: ', time.time()-t1)
     
 
 
-# %% test AGM
-# if __name__ == "__main__":
-#     t1 = time.time()
-#     delta = 1e-1
-#     lam = 0.05
-#     tol = 1e-2
-#     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
-#     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
-#     # coef = grad_hub_coef(X)
-#     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
-#     # AGM(4, lam, delta, X, a, coef, False, tol)
-#     n1 = 100
-#     n2 = 100
-#     a, syn_label = self_dataset(n1=n1, n2=n2, sigma1=1, sigma2=2, c1=[1, 1], c2=[10, 10])
-#     X = np.array([[5, 2] for i in np.arange(n1 + n2)])  # initial point
-#
-#     x_k = AGM(n1 + n2, lam, delta, X, a, False, tol, logname='AGM_1')
-#     # f = ObjFunc(X=X, a=a, grad_coef=coef, weights_mat=weights, delta=delta, lam=lam, if_use_weight=True)
-#     print('time consuming: ', time.time() - t1)
+# %% plot AGM
 
+filels = os.listdir(r'C:\Users\Lenovo\Desktop\OptFinal\code\result\AGM1')
+array_ls = []
+for file in filels:
+    file = file.split('.')[0]
+    df = pickle_read(file, folder='AGM1')
+    array_ls.append(df)
 
-    '''
-    æµè¯ 1
-    delta = 1e-3
-    lam   = 0.001
-    tol   = 1e-2
-    n1 = 100
-    n2 = 100
-    æ¶æï¼èæ¶20minï¼è¿­ä»?580+æ¬?
+def plot_points(arr, label):
+    c = pd.Series(label.reshape(-1,)).apply(lambda x: 'red' if x==1 else('blue' if x==2 else 'green'))
+    pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
+    # plt.xlim(-20,15)
+    plt.show()
     
-    æµè¯ 2
-    delta = 1e-3
-    lam   = 0.005
-    tol   = 1e-2
-    n1 = 100
-    n2 = 100
-    æ¶æï¼è¿­ä»?1711æ¬¡ï¼èæ¶3889s
-    '''
+I = 0
+for arr in array_ls[:2]:
+    print(I, 'th-----------------------')
+    # arr = TSNE(n_components=2,random_state=0,init='pca').fit_transform(arr)
+    # arr = manifold.Isomap(n_components=2).fit_transform(arr)
+    plot_points(arr, label)
+    I +=1
 
 
-# %% AGM_armijo
-def armijo2(s, sigma, gamma, y_k, a, delta, coef, lam, if_use_weight):
-    alpha = s
-    obj_1 = ObjFunc(y_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
-    d = -obj_1.grad_obj_func()
-    obj_2 = ObjFunc(y_k + alpha * d, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
-    while obj_2.obj_func() > obj_1.obj_func() + gamma * alpha * (np.dot(-d.reshape(-1, 1).T, d.reshape(-1, 1))):
-        alpha = sigma * alpha
-        obj_2 = ObjFunc(y_k + alpha * d, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
-    return alpha
-
-
-def AGM_armijo(lam, delta, x_k, a, coef, if_use_weight, tol, s, sigma, gamma):
-    # alpha = s
-    t_k_1 = 1
-    iteration = 0
-    x_k_1 = x_k
-    obj = ObjFunc(x_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
-    grad_x = obj.grad_obj_func()
-
-    while obj.norm_sum_squ(grad_x, squ=False) > tol:
-        t1 = time.time()
-        beta_k = (t_k_1 - 1) / (0.5 * (1 + (1 + 4 * t_k_1 ** 2) ** 0.5))
-        t_k_1 = 0.5 * (1 + (1 + 4 * t_k_1 ** 2) ** 0.5)
-        y_k = x_k + beta_k * (x_k - x_k_1)
-        obj = ObjFunc(y_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
-        x_k_1 = x_k
-        alpha = armijo2(s, sigma, gamma, y_k, a, delta, coef, lam, if_use_weight)
-        x_k = y_k - alpha * (obj.grad_obj_func())
-        iteration += 1
-        obj = ObjFunc(x_k, a, delta=delta, grad_coef=coef, lam=lam, if_use_weight=if_use_weight)
-        grad_x = obj.grad_obj_func()
-        print('iteration: ', iteration,
-              # '\nbeta_k: ', beta_k,
-              # '\nt_k_1: ', t_k_1,
-              # '\ny_k: ', y_k,
-              # '\nx_k: ', x_k,
-              # '\ngrad: ', grad_x,
-              '\nnorm of grad: ', obj.norm_sum_squ(grad_x, squ=False),
-              '\nobj_value: ', obj.obj_func(),
-              '\ntime consuming: ', time.time() - t1)
-
-    return x_k
+# a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
+# a = manifold.Isomap(n_components=2).fit_transform(a)
+plot_points(a, label)
 
