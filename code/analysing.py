@@ -19,8 +19,75 @@ import logging
 import pickle
 import os
 import matplotlib.pyplot as plt
+import imageio
+from scipy.spatial import distance_matrix
+
 #%% 
-def cluster_check(X, max = 20):
+
+def cluster_norm(pickle_nm = None, folder='AGM1', tol = 0.5):
+    ''' 
+    Cluster check by norms and dfs searching
+    input - pickle name, str or int
+
+    Return
+    ----------
+    cluster label array : array with length n, labelled with 1,2,3....
+    '''
+    # pickle_nm = '9'
+    # folder='AGM1'
+    # tol = 0.2
+    if pickle_nm is None: # return the last iteration
+        pickle_nm = max([int(pick.split('.')[0] )for pick in os.listdir(os.getcwd()+'\\result\\'+folder)])
+    
+    X = pickle_read(str(pickle_nm),folder=folder)
+    norm_pair = distance_matrix(X,X)
+
+
+    n = norm_pair.shape[0]
+
+    def dfs_neighbor(idx=0):
+        stack, dfs_path = [idx], []
+
+        while stack:
+            vertex = stack.pop()
+            if vertex in dfs_path:
+                continue
+            dfs_path.append(vertex)
+            neighbor_ls = np.array([j for j in range(n)])[(norm_pair[idx] < tol)]
+            
+            for neighbor in neighbor_ls:
+                stack.append(neighbor)
+                stack = list(set(stack))
+        return dfs_path
+    
+    start       = 0
+    cluster_idx = dfs_neighbor(idx=start) # 0 point's cluster members
+    rest_idx    = [i for i in range(n) if i not in cluster_idx]
+
+    cluster_ls  = [cluster_idx]
+
+    while rest_idx:
+        second   = dfs_neighbor(idx=rest_idx[0])
+        cluster_ls.append(second)
+        rest_idx = [i for i in rest_idx if i not in second]
+
+    clus_num  = len(cluster_ls)
+
+    print('tol =', tol ,' -  Total clusters: ',clus_num)
+    
+    cluster_label_arr = np.array([i for i in range(n)])
+
+    for i in range(0, clus_num):
+        cluster_label_arr[cluster_ls[i]] = i +1
+
+
+    return cluster_label_arr
+
+
+            
+
+def cluster_Kmeans(X, max = 20):
+    '''elbow check by kmeans'''
     K = range(1, max)
     meandistortions = []
     for k in K:
@@ -32,6 +99,16 @@ def cluster_check(X, max = 20):
         plt.ylabel('Average Dispersion')
         plt.title('Selecting k Centroids')
         plt.show()
+#%% 
+
+def plotsToGiF(pic_path):
+    '''convert a folder pictures to gif'''
+    images = []
+    for filename in pic_path:
+        images.append(imageio.imread(filename))
+    imageio.mimsave('/path/to/movie.gif', images)
+
+
 
 def simpleToPlot(arr, pic_path = str(os.getcwd())+'\\pic'):
 
@@ -152,3 +229,6 @@ def multi_convergence(log_ls, fig_name,title_nm = None, max_iter = 100, legend_n
     plt.savefig(os.getcwd()+'\\pic\\convergence\\'+ fig_name +'_convergence.png',bbox_inches='tight')
     print('saved in ', os.getcwd()+'\\pic\\convergence\\'+ fig_name +'_convergence.png')
     plt.show()
+#%% run time plot
+
+

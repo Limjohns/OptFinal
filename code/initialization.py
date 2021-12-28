@@ -216,19 +216,6 @@ def log_read(logname = 'AGM'):
     df.columns = col_name
     return df
 
-def cluster_check(X, max = 20):
-    K = range(1, max)
-    meandistortions = []
-    for k in K:
-        kmeans = KMeans(n_clusters=k)
-        kmeans.fit(X)
-        meandistortions.append(sum(np.min(cdist(X, kmeans.cluster_centers_, 'euclidean'), axis=1))/X.shape[0])
-        plt.plot(K, meandistortions, 'bx-')
-        plt.xlabel('k')
-        plt.ylabel('Average Dispersion')
-        plt.title('Selecting k with the Elbow Method')
-        plt.show()
-
 #%%  objective function class
 class ObjFunc():
     '''Objective Function Class'''
