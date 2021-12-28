@@ -233,7 +233,7 @@ def convergence_plot(logname, title_nm = None, max_iter = 100):
     if title_nm is None:
         pass
     else:
-        plt.title(title_nm)
+        plt.title(title_nm, fontsize=20)
     plt.ylabel(r'$\nabla f(X^{k})$', fontsize=20)
     # plt.legend(fontsize = 16)
     plt.savefig(os.getcwd()+'\\pic\\convergence\\'+ logname +'_convergence.png',bbox_inches='tight')
@@ -252,7 +252,7 @@ def multi_convergence(log_ls, fig_name,title_nm = None, max_iter = 100, legend_n
     for lg in log_ls:
         # logname = 'weighted_AGM_delta1e-1_lam1e-1_tol1_wine(1)'
     
-        df = log_read(logname=logname)
+        df = log_read(logname=lg)
         df['grad'] = df['grad'].apply(lambda x: round(float(x),4))
         df['iter'] = df['iter'].apply(lambda x: int(x))
         df = df.set_index('iter')['grad']
@@ -269,11 +269,45 @@ def multi_convergence(log_ls, fig_name,title_nm = None, max_iter = 100, legend_n
     if title_nm is None:
         pass
     else:
-        plt.title(title_nm)
+        plt.title(title_nm, fontsize=16)
     plt.ylabel(r'$\nabla f(X^{k})$', fontsize=20)
+
+    if legend_name is not None:
+        plt.legend()
+    
     plt.savefig(os.getcwd()+'\\pic\\convergence\\'+ fig_name +'_convergence.png',bbox_inches='tight')
     print('saved in ', os.getcwd()+'\\pic\\convergence\\'+ fig_name +'_convergence.png')
     plt.show()
 #%% run time plot
 
+fl_ls     = os.listdir(os.getcwd()+'\\log')
+fl_ls     = ['E:\\OneDrive\\2021-2022 研一上\\MDS6106-Optimization\\homework\\Final\\log\\bck_NCG_delta0.1_lam0.1_tol1_wine.log']
+log_ls    = []
+legend_ls = []
+df_ls  = []
 
+for file in fl_ls:
+    file  = file.split('.log')[0]
+    df    = log_read(file)
+
+    title = file.split('_')
+    # title = 'Backtrack NCG'+'-'+ title[3] 
+    # convergence_plot(file, title_nm = title, max_iter = None)
+    legend_ls.append(title[3])
+    log_ls.append(file)
+    df_ls.append(df)
+    
+
+    print(title[3])
+    print(df['time'].apply(lambda x: float(x)).sum(),'s')
+    cluster_norm(pickle_nm = None, folder=file, tol = 0.05)
+    print('---------------------')
+
+
+# title_nm = 'Backtrack NCG'
+# multi_convergence(log_ls, fig_name = 'bkt_ncg_diff_lambda_',title_nm = title_nm, max_iter = 100, legend_name = legend_ls)
+
+
+
+
+# %%
