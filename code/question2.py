@@ -96,14 +96,14 @@ def cg(obj, grad, tol, maxiter=10):
     iternum = 0
     grad = grad.reshape(-1, 1)  # (nd, 1) grad
     x = np.zeros((obj.X.size, 1))  # (nd, 1) x0
-    # hess_prod_x = obj.hess_product_p(x)                                #(nd, 1) A*x0
     r = grad  # (nd, 1) r0
     p = -r  # (nd, 1) p0
-
+    hess_pairwise = obj.hess_hub_pairwise()
+    
     # iterate
     while obj.norm_sum_squ(r, squ=False) > tol and iternum <= maxiter:
         iternum += 1
-        hess_prod_p = obj.hess_product_p(p)  # (nd, 1) A*p0
+        hess_prod_p = obj.hess_product_p(p, hess_pairwise)  # (nd, 1) A*p0
         # check if pAp is positive to ensure the correctness of following calculations
         if np.dot(p.T, hess_prod_p) <= 0:
             break
@@ -253,7 +253,10 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('
         'pairwise': pair_coef}
     
     # l2 norm correction delta
-    alpha = 1 / (1 + n * lam / delta)
+    if if_use_weight:    
+        alpha = 1 / (1 + n * lam * weights.max() / delta)
+    else:
+        alpha = 1 / (1 + n * lam / delta)
     t_k_1 = 1
     iteration = 0
     x_k_1 = x_k
@@ -301,26 +304,26 @@ if __name__ == "__main__":
     tol   = 1
     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
-    # coef = grad_hub_coef(X)
-    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
-    # AGM(4, lam, delta, X, a, coef, False, tol)
     
     # random points
-    # n = [30, 40, 20]
-    # sigma = [2, 5, 4]
-    # c = [[1,1], [10,14], [-3,3]]
-    # a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
-    # # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
-    # X = a + np.random.randn(len(a), 2)
-    # x_k = AGM(sum(n), lam, delta, X, a, False, tol,logname='AGM_1')
+    n = [30, 40, 20]
+    sigma = [2, 5, 4]
+    c = [[1,1], [10,14], [-3,3]]
+    a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
+    # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
+    X = a + np.random.randn(len(a), 2)
+    # x_k = AGM(sum(n), lam, delta, X, a, True, tol, logname='weighted_AGM_delta1e-1_lam1e-1_tol1_3c', result_fold = 'weighted_AGM_delta1e-1_lam1e-1_tol1_3c')
     
     
-    # wine dataset
-    a, label = load_dataset('wine')
-    # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
-    # a = manifold.Isomap(n_components=2).fit_transform(a)
+    # real dataset
+    a, label = load_dataset('segment')
+    np.random.seed(111)
+    random_index = np.random.choice(len(a),1000,replace=False)
+    a = a[random_index]
+    label = label[random_index]
+    del random_index
     X = np.zeros(a.shape)
-    x_k = AGM(a.shape[0], lam, delta, X, a, False, tol, logname='AGM_12')
+    x_k = AGM(a.shape[0], lam, delta, X, a, True, tol, logname='weighted_AGM_delta1e-1_lam1e-1_tol1_segment1000', result_fold = 'weighted_AGM_delta1e-1_lam1e-1_tol1_segment1000')
     print('time consuming: ', time.time() - t1)
     
 

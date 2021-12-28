@@ -457,40 +457,38 @@ class ObjFunc():
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
 
 
-    def triangular_hess_hub_sum(self):
+    # def triangular_hess_hub_sum(self):
         
-        (n,d) = self.X.shape
+    #     (n,d) = self.X.shape
         
-        row_hess_list = []
-        for i in range(0, n):
-            row_hess = [np.zeros((d, (i+1)*d))]
-            for j in range(i+1 , n):
-                row_hess.append(self.partial_hess_hub_sum(i, j))
-            row_hess_list.append(np.concatenate(row_hess,axis = 1))
-        full_mat = np.concatenate(row_hess_list)
+    #     row_hess_list = []
+    #     for i in range(0, n):
+    #         row_hess = [np.zeros((d, (i+1)*d))]
+    #         for j in range(i+1 , n):
+    #             row_hess.append(self.partial_hess_hub_sum(i, j))
+    #         row_hess_list.append(np.concatenate(row_hess,axis = 1))
+    #     full_mat = np.concatenate(row_hess_list)
         
-        return full_mat
+    #     return full_mat
 
 
-    def hess_hub_sum_pairwise(self):
-        '''Get the full Hessian Matrix'''
-        diagnoal  = []
-        for i in range(0, len(self.X)):
-            for j in range(i, len(self.X)):
-                if i != j:
-                    pass 
-                else:
-                    diagnoal.append(self.partial_hess_hub_sum(i, j))
-        diagnoal = np.concatenate(diagnoal)
+    # def hess_hub_sum_pairwise(self):
+    #     '''Get the full Hessian Matrix'''
+    #     diagnoal  = []
+    #     for i in range(0, len(self.X)):
+    #         for j in range(i, len(self.X)):
+    #             if i != j:
+    #                 pass 
+    #             else:
+    #                 diagnoal.append(self.partial_hess_hub_sum(i, j))
+    #     diagnoal = np.concatenate(diagnoal)
         
-        Hess_half = self.triangular_hess_hub_sum()
-        return Hess_half.T + Hess_half + diagnoal
+    #     Hess_half = self.triangular_hess_hub_sum()
+    #     return Hess_half.T + Hess_half + diagnoal
 
-
-    def hess_product_p(self, p):
-        '''Newton CG A*p_k'''
+    def hess_hub_pairwise(self):
+        '''hess matrix of xi-xj (i<j)'''
         n, d = self.X.shape
-        p = p.reshape(n*d,1)
         
         ''' hess's diagonals'''
         # lower right layer matrix
@@ -505,17 +503,25 @@ class ObjFunc():
             mat2[i, :i*d]           = np.tile(self.X[i], (i,))         #each row
         # apply hess_func to every xi-xj in (mat1-mat) 
         hess_pairwise = np.apply_along_axis(self.hess_hub, 2, (mat1-mat2).reshape(n,n,d)).reshape(n*d, n*d)
+        return hess_pairwise
+
+
+    def hess_product_p(self, hess_pairwise, p):
+        '''Newton CG A*p_k'''
+        n, d = self.X.shape
+        p = p.reshape(n*d,1)
+        nd = n * d
         # calculata the matrix whose diagonals are Hess's diagonals
-        hess_diagonals = np.diagonal(np.dot((np.ones((n*d, n*d))-np.eye(n*d, n*d)), hess_pairwise)) # (nd,1)  arr
+        hess_diagonals = np.diagonal(np.dot((np.ones((nd, nd))-np.eye(nd, nd)), hess_pairwise)) # (nd,1)  arr
         
         '''hess's other elements'''
-        # hess_other_ele = np.diag(np.diagonal(hess_pairwise)) - hess_pairwise                        # (nd,nd) arr
+        # hess_other_ele = np.diag(np.diagonal(hess_pairwise)) - hess_pairwise                    # (nd,nd) arr
         
-        '''hess*p'''
+        '''2nd item's hess * p'''
         Ap = (hess_diagonals + np.diagonal(hess_pairwise)).reshape(-1,1) * p - np.dot(hess_pairwise, p)
         return Ap + p
         
-        
+        # == old =============================
         # Ap = []
         # for i in range(n): # each d rows of vector Hess*d
         #     hd_i = np.zeros((d,1))
