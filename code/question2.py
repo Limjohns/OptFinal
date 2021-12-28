@@ -172,11 +172,11 @@ if __name__ == "__main__":
     # coef = grad_hub_coef(X)
     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
     # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
-    n1 = 30
-    n2 = 30
+    n1 = 50
+    n2 = 50 
     a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=1,c1=[1,1],c2=[10,10])
-    # X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
-    X = a + np.random.randn(len(a), 2)
+    X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
+    # X = a + np.random.randn(len(a), 2)
     if_use_weight = False
     
     if if_use_weight:
@@ -267,12 +267,12 @@ if __name__ == "__main__":
     # coef = grad_hub_coef(X)
     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
     # AGM(4, lam, delta, X, a, coef, False, tol)
-    n1 = 100
-    n2 = 100
-    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[10,10])
+    n1 = 300
+    n2 = 200
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[5,0],c2=[10,10])
     X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
 
-    x_k = AGM(n1+n2, lam, delta, X, a, False, tol,logname='AGM_1')
+    x_k = AGM(n1+n2, lam, delta, X, a, True, tol,logname='AGM_1')
     # f = ObjFunc(X=X, a=a, grad_coef=coef, weights_mat=weights, delta=delta, lam=lam, if_use_weight=True)
     print('time consuming: ', time.time()-t1)
     
