@@ -97,20 +97,58 @@ def picklesToPlot(label, folder = 'AGM1', L_R_U_D=[None, None, None, None] , max
     
     return array_ls
 #%% gradient convergence plot
+def convergence_plot(logname, title_nm = None, max_iter = 100):
+    '''sinlge convergence plot'''
+    df = log_read(logname=logname)
+    # logname = 'weighted_AGM_delta1e-1_lam1e-1_tol1_wine(1)'
+    df['grad'] = df['grad'].apply(lambda x: round(float(x),4))
+    df['iter'] = df['iter'].apply(lambda x: int(x))
+    df = df.set_index('iter')['grad'][:max_iter]
 
-df = log_read(logname='weighted_AGM_delta1e-1_lam1e-1_tol1_wine(1)')
+    plt.figure(figsize=(10, 6))
+    plt.plot(df)
+    plt.xlabel('Iteration', fontsize=16)
+    if title_nm is None:
+        pass
+    else:
+        plt.title(title_nm)
+    plt.ylabel(r'$\nabla f(X^{k})$', fontsize=20)
+    # plt.legend(fontsize = 16)
+    plt.savefig(os.getcwd()+'\\pic\\convergence\\'+ logname +'_convergence.png',bbox_inches='tight')
+    print('saved in ', os.getcwd()+'\\pic\\convergence\\'+ logname +'_convergence.png')
+    plt.show()
 
+def multi_convergence(log_ls, fig_name,title_nm = None, max_iter = 100, legend_name = None):
+    '''
+    Compare difference convergence in 1 fig
+    
+    legend_name - list of the dataframe columns name, default filename  
 
-plt.figure(figsize=(10, 6))
-plt.semilogy()
-plt.plot(n_n_1, label='tol $ = 10^{-1}$')
-plt.plot(n_n_2, label='tol $ = 10^{-3}$')
-plt.plot(n_n_3, label='tol $ = 10^{-5}$')
-# plt.title("Globalized Newton's Method", fontsize=20)
-plt.xticks(fontsize=12)
-plt.yticks(fontsize=12)
-plt.xlabel('Iteration', fontsize=16)
-plt.ylabel('$||x^{k}-x^{*}||$', fontsize=16)
-plt.legend(fontsize = 16)
-plt.show()
+    '''
+    
+    df_ls = []
+    for lg in log_ls:
+        # logname = 'weighted_AGM_delta1e-1_lam1e-1_tol1_wine(1)'
+    
+        df = log_read(logname=logname)
+        df['grad'] = df['grad'].apply(lambda x: round(float(x),4))
+        df['iter'] = df['iter'].apply(lambda x: int(x))
+        df = df.set_index('iter')['grad']
+        df_ls.append(df)
+    df = pd.concat(df_ls, axis=1)[:max_iter]
+    if legend_name is None:
+        df.columns = log_ls
+    else:
+        df.columns = legend_name
 
+    plt.figure(figsize=(10, 6))
+    df.plot()
+    plt.xlabel('Iteration', fontsize=16)
+    if title_nm is None:
+        pass
+    else:
+        plt.title(title_nm)
+    plt.ylabel(r'$\nabla f(X^{k})$', fontsize=20)
+    plt.savefig(os.getcwd()+'\\pic\\convergence\\'+ fig_name +'_convergence.png',bbox_inches='tight')
+    print('saved in ', os.getcwd()+'\\pic\\convergence\\'+ fig_name +'_convergence.png')
+    plt.show()
