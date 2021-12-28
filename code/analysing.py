@@ -21,6 +21,8 @@ import os
 import matplotlib.pyplot as plt
 import imageio
 from scipy.spatial import distance_matrix
+from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
 
 #%% 
 
@@ -86,19 +88,24 @@ def cluster_norm(pickle_nm = None, folder='AGM1', tol = 0.5):
 
             
 
-def cluster_Kmeans(X, max = 20):
-    '''elbow check by kmeans'''
-    K = range(1, max)
-    meandistortions = []
-    for k in K:
-        kmeans = KMeans(n_clusters=k)
-        kmeans.fit(X)
-        meandistortions.append(sum(np.min(cdist(X, kmeans.cluster_centers_, 'euclidean'), axis=1))/X.shape[0])
-        plt.plot(K, meandistortions, 'bx-')
-        plt.xlabel('k')
-        plt.ylabel('Average Dispersion')
-        plt.title('Selecting k Centroids')
-        plt.show()
+# def cluster_Kmeans(pickle_nm = None, folder='AGM1', max_c = 20):
+#     '''elbow check by kmeans'''
+#     if pickle_nm is None: # return the last iteration
+#         pickle_nm = max([int(pick.split('.')[0] )for pick in os.listdir(os.getcwd()+'\\result\\'+folder)])
+    
+#     X = pickle_read(str(pickle_nm),folder=folder)
+
+#     K = range(1, max_c)
+#     meandistortions = []
+#     for k in K:
+#         kmeans = KMeans(n_clusters=k)
+#         kmeans.fit(X)
+#         meandistortions.append(sum(np.min(cdist(X, kmeans.cluster_centers_, 'euclidean'), axis=1))/X.shape[0])
+#         plt.plot(K, meandistortions, 'bx-')
+#         plt.xlabel('k')
+#         plt.ylabel('Average Dispersion')
+#         plt.title('Selecting k Centroids')
+#         plt.show()
 #%% 
 
 def plotsToGiF(pic_path):
