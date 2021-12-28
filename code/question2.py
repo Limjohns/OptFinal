@@ -209,11 +209,20 @@ if __name__ == "__main__":
 
 
 # %% accelerated gradient method
-def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'):
+def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('%H_%M_%S', time.gmtime()), result_fold = 'AGM_'+time.strftime('%H_%M_%S', time.gmtime())):
+    
+    result_path = str(os.getcwd())+ '\\result\\'+result_fold
+    
+    if not os.path.exists(result_path):    
+        os.makedirs(result_path)
+        print("--- Result will be: ", result_fold, ' --- ')
+    
     if if_use_weight:
         weights = get_weights(a, 5)
     else:
         weights = None
+
+
     print('--- AGM Initializing ---')
     grad_coef = grad_hub_coef(X)
     pair_coef = pairwise_coef(X, opera='-')
@@ -231,11 +240,12 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'):
     obj = ObjFunc(x_k, a, delta=delta, mat_config=matrix_config, lam=lam, if_use_weight=if_use_weight)
     grad_x = obj.grad_obj_func()
 
-    # logger = my_custom_logger(str(os.getcwd()) + '\\log\\' + logname + '.log')
+    logger = my_custom_logger(str(os.getcwd()) + '\\log\\' + logname + '.log')
 
     print('--- AGM Starting ---')
     while obj.norm_sum_squ(grad_x, squ=False) > tol:
-        pickle_write(data=x_k, filenm=str(iteration))
+        
+        pickle_write(data=x_k, filenm=str(iteration), folder = result_fold)
 
         t1 = time.time()
         beta_k = (t_k_1 - 1) / (0.5 * (1 + (1 + 4 * t_k_1 ** 2) ** 0.5))
@@ -259,7 +269,7 @@ def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'):
               # '\nobj_value: ', obj.obj_func(),
               '\ntime consuming: ', time.time() - t1)
 
-        # logger.info('iter:'+str(iteration)+',grad:'+str(norm_grad)+',value:'+str(obj.obj_func())+',time:'+str(time.time()-t1))
+        logger.info('iter:'+str(iteration)+',grad:'+str(norm_grad)+',value:'+str(obj.obj_func())+',time:'+str(time.time()-t1))
 
     return x_k
 #%% test AGM
@@ -288,10 +298,10 @@ if __name__ == "__main__":
     # wine dataset
     a, label = load_dataset('wine')
     # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
-    a = manifold.Isomap(n_components=2).fit_transform(a)
+    # a = manifold.Isomap(n_components=2).fit_transform(a)
     X = np.zeros(a.shape)
-    x_k = AGM(a.shape[0], lam, delta, X, a, False, tol,logname='AGM_1')
-    print('time consuming: ', time.time()-t1)
+    x_k = AGM(a.shape[0], lam, delta, X, a, False, tol, logname='AGM_12')
+    print('time consuming: ', time.time() - t1)
     
 
 
