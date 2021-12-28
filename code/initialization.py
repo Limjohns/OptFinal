@@ -84,7 +84,37 @@ def load_dataset(dataset = 'wine'):
 
     return data, label
 
+
+def mnius_coef(X):
+    '''
+    To Compute the pairwise differences
+
+    By left dot X in shape (n, 1)  
+    
+    Return: 
+    --------
+    np.array(row_ls) in shape [(n*(n-1)/2), n]
+    '''
+    n, d = X.shape
+    row_ls = []
+    for i in range(n):        
+        for j in range(i+1, n):
+            row    = np.array([0 for i in range(n)])
+            row[i] = 1 
+            row[j] = -1
+            row_ls.append(row)
+    return np.array(row_ls)
+
 def grad_hub_coef(X):
+    '''
+    To Compute huber gradient
+
+    By left dot X in shape (n, 1)  
+    
+    Return: 
+    --------
+    np.array(row_ls) in shape [(n*(n-1)/2), n]
+    '''
     n, d = X.shape
     def loc_fun(row_num, n):
         if row_num == 1:
@@ -135,51 +165,6 @@ def get_weights(a, topnum = 5):
         return res
     
     return weight_mask(full_w_arr, topnum)
-
-# weight matrix - ! wrong!
-# def get_weights2(a, topnum = 2):
-#     def norm_dist(a_i, a_j=0):
-#         d = a_i - a_j
-#         if len(d.shape) == 1:
-#             d = np.array([d])
-#         res = np.sum(np.einsum('ij,ij->i',d,d))
-#         return res
-    
-#     def triangular(a):
-#         n    = int(np.sqrt(len(a)*2))+1
-#         mask = np.arange(n)[:,None] > np.arange(n)
-#         out  = np.zeros((n,n),dtype=np.float32)
-#         out[mask] = a
-#         return out
-    
-#     def get_full_weight_array(a):
-#         weights_list = []
-#         for i in range(len(a)):
-#             for j in range(i+1, len(a)):
-#                 weight_ij = np.exp(-0.5*norm_dist(a[i], a[j]))
-#                 weights_list.append(weight_ij)
-#         weights = triangular(weights_list)
-#         return weights.T + weights
-    
-#     def top_k(x,k):
-#         ind=np.argpartition(x,[i for i in range(k)])[:k]
-#         return ind[np.argsort(x[ind])]
-    
-#     def weight_topk(weights_arr, top_num = topnum):
-#         weight_df = pd.DataFrame(weights_arr)
-#         return np.apply_along_axis(lambda x: top_k(x,top_num+1),0,weight_df.values)[1:]
-    
-#     def weight_mask(weights_arr, top_num=topnum):
-#         loc = weight_topk(weights_arr, top_num)
-#         n = len(weights_arr)
-#         res = np.zeros((n, n))
-#         for i in range(n):
-#             res[loc[:,i], i] = weights_arr[loc[:,i], i]
-#         return res
-    
-#     full_w_arr = get_full_weight_array(a)
-    
-#     return weight_mask(full_w_arr, topnum)
 
 ### read log and pickle
 def pickle_write(data, filenm, folder='AGM1'):
