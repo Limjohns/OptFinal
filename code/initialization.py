@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import scipy.io
 import timeit
 import os
+from scipy.spatial import distance_matrix
 
 #%% load data function
 
@@ -111,31 +112,12 @@ def grad_hub_coef(X):
         rows.append(row)
     return np.stack(rows)
 
-# weight matrix
-def get_weights(a, topnum = 2):
-    def norm_dist(a_i, a_j=0):
-        d = a_i - a_j
-        if len(d.shape) == 1:
-            d = np.array([d])
-        res = res = np.sum(np.einsum('ij,ij->i',d,d))
-        return res
-    
-    def triangular(a):
-        n = int(np.sqrt(len(a)*2))+1
-        mask = np.tri(n,dtype=bool, k=-1) # or np.arange(n)[:,None] > np.arange(n)
-        out = np.zeros((n,n),dtype=np.float32)
-        out[mask] = a
-        return out
-    
-    def get_full_weight_array(a):
-        weights_list = []
-        for i in range(len(a)):
-            for j in range(i+1, len(a)):
-                weight_ij = np.exp(-0.5*norm_dist(a[i], a[j]))
-                weights_list.append(weight_ij)
-        weights = triangular(weights_list)
-        return weights.T + weights
-    
+### Get weights in q3
+def get_weights(a, topnum = 5):
+    mat_dist = pd.DataFrame(distance_matrix(a, a))
+    mat_dist = np.square(mat_dist)
+    full_w_arr = np.exp(-0.5*mat_dist).to_numpy()
+
     def top_k(x,k):
         ind=np.argpartition(x,[i for i in range(k)])[:k]
         return ind[np.argsort(x[ind])]
@@ -152,9 +134,80 @@ def get_weights(a, topnum = 2):
             res[loc[:,i], i] = weights_arr[loc[:,i], i]
         return res
     
-    full_w_arr = get_full_weight_array(a)
-    
     return weight_mask(full_w_arr, topnum)
+
+# weight matrix - ! wrong!
+# def get_weights2(a, topnum = 2):
+#     def norm_dist(a_i, a_j=0):
+#         d = a_i - a_j
+#         if len(d.shape) == 1:
+#             d = np.array([d])
+#         res = np.sum(np.einsum('ij,ij->i',d,d))
+#         return res
+    
+#     def triangular(a):
+#         n    = int(np.sqrt(len(a)*2))+1
+#         mask = np.arange(n)[:,None] > np.arange(n)
+#         out  = np.zeros((n,n),dtype=np.float32)
+#         out[mask] = a
+#         return out
+    
+#     def get_full_weight_array(a):
+#         weights_list = []
+#         for i in range(len(a)):
+#             for j in range(i+1, len(a)):
+#                 weight_ij = np.exp(-0.5*norm_dist(a[i], a[j]))
+#                 weights_list.append(weight_ij)
+#         weights = triangular(weights_list)
+#         return weights.T + weights
+    
+#     def top_k(x,k):
+#         ind=np.argpartition(x,[i for i in range(k)])[:k]
+#         return ind[np.argsort(x[ind])]
+    
+#     def weight_topk(weights_arr, top_num = topnum):
+#         weight_df = pd.DataFrame(weights_arr)
+#         return np.apply_along_axis(lambda x: top_k(x,top_num+1),0,weight_df.values)[1:]
+    
+#     def weight_mask(weights_arr, top_num=topnum):
+#         loc = weight_topk(weights_arr, top_num)
+#         n = len(weights_arr)
+#         res = np.zeros((n, n))
+#         for i in range(n):
+#             res[loc[:,i], i] = weights_arr[loc[:,i], i]
+#         return res
+    
+#     full_w_arr = get_full_weight_array(a)
+    
+#     return weight_mask(full_w_arr, topnum)
+
+### read log and pickle
+def pickle_write(data, filenm, folder='AGM1'):
+    with open('result/' + folder + '/' + filenm + ".pkl", "wb") as f:
+        pickle.dump(data, f)
+
+def pickle_read(filenm, folder='AGM1'):
+    with open('result/' + folder + '/' + filenm + ".pkl", "rb") as f:
+        out = pickle.load(f)
+    return out
+
+def log_read(logname = 'AGM'):
+    path = str(os.getcwd()) + '\\log\\' + logname + '.log'
+    with open(path) as f:
+        records = []
+        for line in f.readlines():
+            ls = line.split(' | ')
+            records.append(ls[-1].strip())
+        all_rec = []
+        for rec in records:
+            iter_rec = rec.split(',')
+            iter_rec = [rec.split(":")[-1] for rec in iter_rec]
+            all_rec.append(iter_rec)
+    df = pd.DataFrame(all_rec)
+    df.columns = ['iteration','Norm_grad','Obj_val','time_consuming']
+    return pd.DataFrame(all_rec)
+
+
 
 #%%  objective function class
 class ObjFunc():
