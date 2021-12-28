@@ -210,7 +210,7 @@ def log_read(logname = 'AGM'):
             all_rec.append(iter_rec)
     df = pd.DataFrame(all_rec)
     df.columns = ['iteration','Norm_grad','Obj_val','time_consuming']
-    return pd.DataFrame(all_rec)
+    return df
 
 
 def cluster_check(X, max = 20):
