@@ -67,9 +67,19 @@ def log_read(logname = 'AGM'):
 
 def armijo(d, s, sigma, gamma, x_k, a, coef, delta, lam, if_use_weight):
     alpha = s
+<<<<<<< Updated upstream
     obj_1 = ObjFunc(X=x_k, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=if_use_weight)
     obj_2 = ObjFunc(X=x_k+alpha*d, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=if_use_weight)
     while obj_2.obj_func() > obj_1.obj_func()+gamma*alpha*(np.dot((-obj_1.grad_obj_func().reshape(-1, 1).T),d.reshape(-1, 1))):
+=======
+    obj_2 = ObjFunc(X=obj.X+alpha*d
+                    ,a=obj.a
+                    ,grad_coef=obj.grad_coef
+                    ,delta=obj.delta
+                    ,lam=obj.lam
+                    ,if_use_weight=obj.if_use_weight)
+    while obj_2.obj_func() > obj.obj_func()+gamma*alpha*(np.dot((obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1)))[0][0]:
+>>>>>>> Stashed changes
         alpha = alpha * sigma
         obj_2 = ObjFunc(X=x_k+alpha*d, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=if_use_weight)
     return alpha, obj_2
@@ -120,7 +130,7 @@ def newton_cg(obj, s, sigma, gamma, tol):
     
     while grad_x_norm > tol and iteration < 5000:
         iteration += 1
-        
+        t1 = time.time()
         # CG direction d
         cg_tol = min(1, grad_x_norm**0.1) * grad_x_norm
         d = cg(obj, grad=grad_x, tol=cg_tol)
@@ -142,12 +152,14 @@ def newton_cg(obj, s, sigma, gamma, tol):
         print(
             "Iteration:",    iteration, 
             "\nnorm of grad:", grad_x_norm,
+            '\ntime: ', time.time()-t1
             )
         
     return obj.X
 #%% test Newton-CG
 if __name__ == "__main__":
     t1 = time.time()
+<<<<<<< Updated upstream
     X  = np.array([[1,1], [1,1], [2,2], [3,3]])
     a = np.array([[1,1],[1,1],[2,2],[2,2]])
     coef = grad_hub_coef(X)
@@ -157,9 +169,25 @@ if __name__ == "__main__":
     # n2 = 100
     # a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
     # X = np.array([[2,2] for i in np.arange(n1+n2)]) # initial point
+=======
+
+    delta = 1e-3
+    lam   = 0.05
+    tol   = 1
+    # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
+    # a = np.array([[1,1],[1,1],[2,2],[2,2]])
+>>>>>>> Stashed changes
     # coef = grad_hub_coef(X)
-    # x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol)
-    # f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
+    # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-3)
+    n1 = 100
+    n2 = 100
+    s, sigma, gamma = 1, 0.5, 0.1
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
+    X = np.array([[2,2] for i in np.arange(n1+n2)]) # initial point
+    coef = grad_hub_coef(X)
+    f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+    x_k = newton_cg(f, s, sigma, gamma, tol)
     print('time consuming: ', time.time()-t1)
 
 
@@ -204,6 +232,7 @@ def AGM(n, lam, delta, x_k, a, coef, if_use_weight, tol, logname='AGM'):
         logger.info('iter:'+str(iteration)+',grad:'+str(norm_grad)+',value:'+str(obj.obj_func())+',time:'+str(time.time()-t1))
         
     return x_k
+<<<<<<< Updated upstream
 #%% test AGM
 if __name__ == "__main__":
     t1 = time.time()
@@ -223,6 +252,27 @@ if __name__ == "__main__":
     x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol, logname='AGM')
     f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=True)
     print('time consuming: ', time.time()-t1)
+=======
+# #%% test AGM
+# if __name__ == "__main__":
+#     t1 = time.time()
+#     delta = 1e-3
+#     lam   = 0.05
+#     tol   = 1
+#     # X  = np.array([[1,1], [1,1], [2,2], [3,3]])
+#     # a = np.array([[1,1],[1,1],[2,2],[2,2]])
+#     # coef = grad_hub_coef(X)
+#     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+#     # AGM(4, lam, delta, X, a, coef, False, tol)
+#     n1 = 100
+#     n2 = 100
+#     a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[10,10])
+#     X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
+#     coef = grad_hub_coef(X)
+#     x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol, logname='AGM')
+#     # f = ObjFunc(X=X, a=a, grad_coef=coef, weights_mat=weights, delta=delta, lam=lam, if_use_weight=True)
+#     print('time consuming: ', time.time()-t1)
+>>>>>>> Stashed changes
     
     '''
     测试 1
