@@ -346,40 +346,40 @@ class ObjFunc():
                 res += self.hub(self.X[i], self.X[j]) * self.weight(i, j)
         return res
 
-    def partial_grad_hub_sum(self,i):
-        '''
-        Partial gradient of every rows in the gradient vector
+    # def partial_grad_hub_sum(self,i):
+    #     '''
+    #     Partial gradient of every rows in the gradient vector
 
-        Parameters 
-        ----------
-        i : index of variables to be derived, int
+    #     Parameters 
+    #     ----------
+    #     i : index of variables to be derived, int
         
-        Returns
-        ----------
-        1       - when not using weights
-        weights - when using weights
+    #     Returns
+    #     ----------
+    #     1       - when not using weights
+    #     weights - when using weights
 
-        '''
-        partial_grad = 0
-        for j in range(0, len(self.X)):
-            if j < i:
-                partial_grad += -self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
-            elif j > i:
-                partial_grad +=  self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
+    #     '''
+    #     partial_grad = 0
+    #     for j in range(0, len(self.X)):
+    #         if j < i:
+    #             partial_grad += -self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
+    #         elif j > i:
+    #             partial_grad +=  self.grad_hub(self.X[i], self.X[j]) * self.weight(i,j)
 
-        return partial_grad 
+    #     return partial_grad 
 
 
-    def grad_hub_sum_pairwise(self):
-        '''
-        Gradient of the 2nd item of the obj function (vector)
+    # def grad_hub_sum_pairwise(self):
+    #     '''
+    #     Gradient of the 2nd item of the obj function (vector)
         
-        Returns
-        ----------
-        Gradient: [n*d] (in the same shape with X)
+    #     Returns
+    #     ----------
+    #     Gradient: [n*d] (in the same shape with X)
 
-        '''
-        return np.array([self.partial_grad_hub_sum(i) for i in range(len(self.X))])  
+    #     '''
+    #     return np.array([self.partial_grad_hub_sum(i) for i in range(len(self.X))])  
 
     def grad_hub_matrix(self):
         '''use matrix to calculate the gradient of the 2nd item'''
@@ -455,6 +455,7 @@ class ObjFunc():
     #                 diagnoal.append(self.partial_hess_hub_sum(i, j))
     #     Hess_half = self.fill_upper_diag(tringular)
     #     return Hess_half.T + Hess_half + np.diag(diagnoal)
+    
     def triangular_hess_hub_sum(self):
         
         (n,d) = self.X.shape
@@ -489,14 +490,39 @@ class ObjFunc():
         '''Newton CG A*p_k'''
         n, d = self.X.shape
         p = p.reshape(n*d,1)
-        Ap = []
-        for i in range(n): # each d rows of vector Hess*d
-            hd_i = np.zeros((d,1))
-            for k in range(n):  # sum up to calculate each d rows
-                hd_i += np.dot(self.partial_hess_hub_sum(i, k), p[k*d : (k+1)*d])
-            Ap.append(hd_i)
-        Ap = np.stack(Ap).reshape(-1,1)
+        
+        ''' hess's diagonals'''
+        # lower right layer matrix
+        mat1 = np.zeros((n,n*d))
+        for i in range(n):
+            mat1[i:, i*d:(i+1)*d] = self.X[i]                          #each column
+            mat1[i, (i+1)*d:]     = np.tile(self.X[i], (n-i-1,))       #each row
+        # pper left layer matrix
+        mat2 = np.zeros((n,n*d))
+        for i in range(n):
+            mat2[:i+1, i*d:(i+1)*d] = self.X[i]                        #each column
+            mat2[i, :i*d]           = np.tile(self.X[i], (i,))         #each row
+        # apply hess_func to every xi-xj in (mat1-mat) 
+        hess_pairwise = np.apply_along_axis(self.hess_hub, 2, (mat1-mat2).reshape(n,n,d)).reshape(n*d, n*d)
+        # calculata the matrix whose diagonals are Hess's diagonals
+        hess_diagonals = np.diagonal(np.dot((np.ones((n*d, n*d))-np.eye(n*d, n*d)), hess_pairwise)) # (nd,1)  arr
+        
+        '''hess's other elements'''
+        # hess_other_ele = np.diag(np.diagonal(hess_pairwise)) - hess_pairwise                        # (nd,nd) arr
+        
+        '''hess*p'''
+        Ap = (hess_diagonals + np.diagonal(hess_pairwise)).reshape(-1,1) * p - np.dot(hess_pairwise, p)
         return Ap + p
+        
+        
+        # Ap = []
+        # for i in range(n): # each d rows of vector Hess*d
+        #     hd_i = np.zeros((d,1))
+        #     for k in range(n):  # sum up to calculate each d rows
+        #         hd_i += np.dot(self.partial_hess_hub_sum(i, k), p[k*d : (k+1)*d])
+        #     Ap.append(hd_i)
+        # Ap = np.stack(Ap).reshape(-1,1)
+        # return Ap + p
         
 
     def obj_func(self):
@@ -504,11 +530,11 @@ class ObjFunc():
         fx = 0.5*self.norm_sum_squ(a=self.a,x=self.X, squ=True) + self.lam*self.hub_sum_pairwise()
         return fx
 
-    def grad_obj_func0(self):
-        '''gradient of the objective function'''
+    # def grad_obj_func0(self):
+    #     '''gradient of the objective function'''
 
-        grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
-        return grad_fx
+    #     grad_fx = (self.X-self.a) + self.lam*self.grad_hub_sum_pairwise()
+    #     return grad_fx
     
     def grad_obj_func(self):
         '''gradient of the objective function'''
@@ -562,4 +588,14 @@ f = ObjFunc(X = X, a = a, grad_coef=coef, weights_mat=weights, delta=1e-3, lam=1
 # upper = f.triangular_hess_hub_sum()
 
 #%% hess matrix test
-
+n, d = X.shape
+mat1 = np.zeros((n,n*d))
+for i in range(n):
+    mat1[i:, i*d:(i+1)*d] = X[i] #each column
+    mat1[i, (i+1)*d:] = np.tile(X[i], (n-i-1,))#each row
+#%%
+n, d = X.shape
+mat2 = np.zeros((n,n*d))
+for i in range(n):
+    mat2[:i+1, i*d:(i+1)*d] = X[i]#each column
+    mat2[i, :i*d] = np.tile(X[i], (i,))#each row

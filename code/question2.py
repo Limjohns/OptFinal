@@ -170,8 +170,8 @@ if __name__ == "__main__":
     # coef = grad_hub_coef(X)
     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
     # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
-    n1 = 20
-    n2 = 20
+    n1 = 30
+    n2 = 30
     a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=1,c1=[1,1],c2=[10,10])
     # X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
     X = a + np.random.randn(len(a), 2)
