@@ -67,23 +67,23 @@ def log_read(logname='AGM'):
     return pd.DataFrame(all_rec)
 
 
-def armijo(d, obj, s, sigma, gamma):
++def armijo(d, obj, s, sigma, gamma,config):
     alpha = s
-    obj_2 = ObjFunc(X=obj.X + alpha * d
-                    , a=obj.a
-                    , grad_coef=obj.grad_coef
-                    , delta=obj.delta
-                    , lam=obj.lam
-                    , if_use_weight=obj.if_use_weight)
+    obj_2 = ObjFunc(X           = obj.X+alpha*d
+                   ,a          = obj.a
+                   ,mat_config = config
+                   ,delta      = obj.delta
+                   ,lam        = obj.lam
+                   ,if_use_weight = obj.if_use_weight)
     while obj_2.obj_func() > obj.obj_func() + gamma * alpha * \
             (np.dot((obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1)))[0][0]:
         alpha = alpha * sigma
-        obj_2 = ObjFunc(X=obj.X + alpha * d
-                        , a=obj.a
-                        , grad_coef=obj.grad_coef
-                        , delta=obj.delta
-                        , lam=obj.lam
-                        , if_use_weight=obj.if_use_weight)
+        obj_2 = ObjFunc(X           = obj.X+alpha*d
+                        ,a          = obj.a
+                        ,mat_config = config
+                        ,delta      = obj.delta
+                        ,lam        = obj.lam
+                        ,if_use_weight = obj.if_use_weight)  
     return alpha, obj_2
 
 
@@ -126,7 +126,7 @@ def direction_check(d, grad):
         return False
 
 
-def newton_cg(obj, s, sigma, gamma, tol):
+def newton_cg(obj, s, sigma, gamma, tol, config):
     iteration = 0
     grad_x = obj.grad_obj_func()
     grad_x_norm = obj.norm_sum_squ(grad_x, squ=False)
@@ -147,7 +147,7 @@ def newton_cg(obj, s, sigma, gamma, tol):
 
         # choose step size
         # alpha_bck, obj2  = armijo(d, obj, s=s, sigma=sigma, gamma=gamma)
-        alpha, obj = armijo(d, obj, s=s, sigma=sigma, gamma=gamma)
+        alpha, obj  = armijo(d, obj, s=s, sigma=sigma, gamma=gamma, config=config)
         # alpha_L = obj.delta / (1 + len(obj.X)*obj.lam)
         # alpha = obj.delta / (1 + len(obj.X)*obj.lam)
         # alpha = max(alpha_bck, alpha_L)
@@ -271,7 +271,7 @@ if __name__ == "__main__":
     # AGM(4, lam, delta, X, a, coef, False, tol)
     n1 = 300
     n2 = 200
-    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[5,0],c2=[10,10])
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[5,7],c2=[10,10])
     X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
 
     x_k = AGM(n1+n2, lam, delta, X, a, True, tol,logname='AGM_1')
@@ -302,21 +302,21 @@ if __name__ == "__main__":
 
 
     '''
-    测试 1
+    æµè¯ 1
     delta = 1e-3
     lam   = 0.001
     tol   = 1e-2
     n1 = 100
     n2 = 100
-    收敛，耗时20min，迭�?580+�?
+    æ¶æï¼èæ¶20minï¼è¿­ä»?580+æ¬?
     
-    测试 2
+    æµè¯ 2
     delta = 1e-3
     lam   = 0.005
     tol   = 1e-2
     n1 = 100
     n2 = 100
-    收敛，迭�?1711次，耗时3889s
+    æ¶æï¼è¿­ä»?1711æ¬¡ï¼èæ¶3889s
     '''
 
 
