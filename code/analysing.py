@@ -23,7 +23,7 @@ import imageio
 from scipy.spatial import distance_matrix
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
-
+import random
 #%% 
 
 def cluster_norm(pickle_nm = None, folder='AGM1', tol = 0.5):
@@ -86,42 +86,77 @@ def cluster_norm(pickle_nm = None, folder='AGM1', tol = 0.5):
     return cluster_label_arr
 
 
-            
-
-# def cluster_Kmeans(pickle_nm = None, folder='AGM1', max_c = 20):
-#     '''elbow check by kmeans'''
-#     if pickle_nm is None: # return the last iteration
-#         pickle_nm = max([int(pick.split('.')[0] )for pick in os.listdir(os.getcwd()+'\\result\\'+folder)])
-    
-#     X = pickle_read(str(pickle_nm),folder=folder)
-
-#     K = range(1, max_c)
-#     meandistortions = []
-#     for k in K:
-#         kmeans = KMeans(n_clusters=k)
-#         kmeans.fit(X)
-#         meandistortions.append(sum(np.min(cdist(X, kmeans.cluster_centers_, 'euclidean'), axis=1))/X.shape[0])
-#         plt.plot(K, meandistortions, 'bx-')
-#         plt.xlabel('k')
-#         plt.ylabel('Average Dispersion')
-#         plt.title('Selecting k Centroids')
-#         plt.show()
 #%% 
-
-def plotsToGiF(pic_path):
+def plotsToGiF(pic_path, gifname):
     '''convert a folder pictures to gif'''
     images = []
     for filename in pic_path:
         images.append(imageio.imread(filename))
-    imageio.mimsave('/path/to/movie.gif', images)
-
-
+    imageio.mimsave('/gif'+ gifname +'.gif', images)
 
 def simpleToPlot(arr, pic_path = str(os.getcwd())+'\\pic'):
 
     pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
     plt.savefig(pic_path+'\\a.png')
     plt.show()
+
+
+def rawToPlot(a, folder = 'AGM1', tol = 0.5, L_R_U_D=[None, None, None, None] , max_pic=50, pic_folder = None, show_pic = False):
+    '''
+    a      : row data 
+    
+    folder : pickles folder  
+
+    show how categories changes with iteration 
+    
+    '''
+    if pic_folder is not None:
+        pass
+    else:
+        pic_folder = folder
+    
+    pic_path = str(os.getcwd())+ '\\pic\\' + pic_folder
+
+    if not os.path.exists(pic_path):    
+        os.makedirs(pic_path)
+        print("--- Pictures will be saved in : ", pic_path, ' --- ')
+
+    ### color dict ###
+    def generate_color(kind):
+        color_ls = ['r','g','b','#1e1e1e','y']
+        for i in range(kind):
+            color_ls.extend(["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])])
+        return color_ls 
+
+    
+
+    #### pickle read ####
+    filels = os.listdir(str(os.getcwd()) + '\\result\\' + folder)
+
+    for file in filels[:max_pic]:
+        file  = file.split('.')[0]
+
+        label = cluster_norm(pickle_nm = file, folder=folder, tol = tol)
+
+        c     = pd.Series(label.reshape(-1,)).apply(lambda x: color_dict[x])
+
+        categories = list(set(label.reshape(-1,).tolist()))
+        colors_ls  = generate_color(len(categories))[:len(categories)]
+        # color - categories mapping
+        color_dict = dict(zip(categories, colors_ls))
+        # Plotting 
+        pd.DataFrame(a).plot.scatter(x=0, y=1, c=c)
+        plt.xlim(L_R_U_D[0], L_R_U_D[1])
+        plt.ylim(L_R_U_D[3], L_R_U_D[2])
+        plt.title(file + 'th Iteration')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.savefig(pic_path+'\\'+file+'.png')
+        if not show_pic:
+            print(file, 'th-----------------------')
+            plt.show()
+
+
 
 def picklesToPlot(label, folder = 'AGM1', L_R_U_D=[None, None, None, None] , max_pic=50, pic_folder = None, show_pic = False):
     '''
@@ -163,23 +198,26 @@ def picklesToPlot(label, folder = 'AGM1', L_R_U_D=[None, None, None, None] , max
 
     #### pickle read ####
     filels = os.listdir(str(os.getcwd()) + '\\result\\' + folder)
-    array_ls = []
 
     for file in filels[:max_pic]:
         file = file.split('.')[0]
         df = pickle_read(file, folder = folder) # read pickles
-        array_ls.append(df)
         # Plotting 
-        pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
+        pd.DataFrame(df).plot.scatter(x=0, y=1, c=c)
         plt.xlim(L_R_U_D[0], L_R_U_D[1])
-        plt.ylim(L_R_U_D[2], L_R_U_D[3])
-
+        plt.ylim(L_R_U_D[3], L_R_U_D[2])
+        plt.title(file + 'th Iteration')
+        plt.xlabel('x')
+        plt.ylabel('y')
         plt.savefig(pic_path+'\\'+file+'.png')
         if not show_pic:
             print(file, 'th-----------------------')
             plt.show()
     
-    return array_ls
+
+
+
+
 #%% gradient convergence plot
 def convergence_plot(logname, title_nm = None, max_iter = 100):
     '''sinlge convergence plot'''
