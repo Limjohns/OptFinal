@@ -9,7 +9,7 @@
 '''
 
 # %%
-from initialization import load_dataset, self_generate_cluster, grad_hub_coef, self_dataset, get_weights, pairwise_coef
+from initialization import load_dataset, self_generate_cluster, self_dataset,  pickle_write, pickle_read, log_read, cluster_check
 from initialization import ObjFunc
 import numpy as np
 import pandas as pd
@@ -23,9 +23,15 @@ from sklearn import manifold
 import random
 
 
-# %%
 
 # %% plot AGM
+
+
+def simpleToPlot(arr, pic_path = str(os.getcwd())+'\\pic'):
+
+    pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
+    plt.savefig(pic_path+'\\a.png')
+    plt.show()
 
 
 def picklesToPlot(label, folder = 'AGM1', max_pic=50, pic_folder = None, show_pic = False):
@@ -46,7 +52,7 @@ def picklesToPlot(label, folder = 'AGM1', max_pic=50, pic_folder = None, show_pi
     else:
         pic_folder = folder
     
-    pic_path = str(os.getcwd())+ '\\result\\' + pic_folder
+    pic_path = str(os.getcwd())+ '\\pic\\' + pic_folder
     if not os.path.exists(pic_path):    
         os.makedirs(pic_path)
         print("--- Pictures will be saved in : ", pic_path, ' --- ')
@@ -85,6 +91,7 @@ def picklesToPlot(label, folder = 'AGM1', max_pic=50, pic_folder = None, show_pi
     
     return array_ls
 
+#%% logging and recording
 
 def my_custom_logger(logger_name, level=logging.INFO):
     """
