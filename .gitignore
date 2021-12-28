@@ -117,3 +117,4 @@ dmypy.json
 code/result
 code/log
 code/pic
+*.pkl
