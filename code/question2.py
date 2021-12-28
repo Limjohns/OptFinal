@@ -43,7 +43,7 @@ def my_custom_logger(logger_name, level=logging.INFO):
 
 
 def pickle_write(data, filenm, folder='AGM1'):
-    with open('result/' + folder + '/' + filenm + ".pkl", "wb") as f:
+    with open(os.path.join(r'/Users/leongvan/Documents/GitHub/OptFinal/code/result', folder, "{0}.pkl".format(filenm)), "wb") as f:
         pickle.dump(data, f)
 
 
@@ -173,45 +173,46 @@ def newton_cg(obj, s, sigma, gamma, tol, config):
 
 
 # %% test Newton-CG
-if __name__ == "__main__":
-    t1 = time.time()
-    # X  = np.array([[1,1], [1,3], [2,2], [3,3]])
-    # a = np.array([[1,1],[1,6],[2,2],[2,2]])
-    # coef = grad_hub_coef(X)
-    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
-    # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
-    n1 = 50
-    n2 = 50 
-    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=1,c1=[1,1],c2=[10,10])
-    X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
-    # X = a + np.random.randn(len(a), 2)
-    if_use_weight = False
-    
-    if if_use_weight:
-        weights   = get_weights(a, 5)
-    else:
-        weights = None
-    grad_coef = grad_hub_coef(X)
-    pair_coef = pairwise_coef(X, opera = '-') 
-
-    matrix_config = {
-        'gradient' : grad_coef, 
-        'weights'  : weights, 
-        'pairwise' : pair_coef}
-
-    
-    # coef = grad_hub_coef(X)
-    f = ObjFunc(X=X, a=a, mat_config = matrix_config, delta=1e-3, lam=0.05, if_use_weight=False)
-
-    x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1, config=matrix_config)
-
-    print('time consuming: ', time.time()-t1)
+# if __name__ == "__main__":
+#     t1 = time.time()
+#     # X  = np.array([[1,1], [1,3], [2,2], [3,3]])
+#     # a = np.array([[1,1],[1,6],[2,2],[2,2]])
+#     # coef = grad_hub_coef(X)
+#     # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
+#     # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
+#     n1 = 50
+#     n2 = 50
+#     a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=1,c1=[1,1],c2=[10,10])
+#     X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
+#     # X = a + np.random.randn(len(a), 2)
+#     if_use_weight = False
+#
+#     if if_use_weight:
+#         weights   = get_weights(a, 5)
+#     else:
+#         weights = None
+#     grad_coef = grad_hub_coef(X)
+#     pair_coef = pairwise_coef(X, opera = '-')
+#
+#     matrix_config = {
+#         'gradient' : grad_coef,
+#         'weights'  : weights,
+#         'pairwise' : pair_coef}
+#
+#
+#     # coef = grad_hub_coef(X)
+#     f = ObjFunc(X=X, a=a, mat_config = matrix_config, delta=1e-3, lam=0.05, if_use_weight=False)
+#
+#     x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1, config=matrix_config)
+#
+#     print('time consuming: ', time.time()-t1)
 
 
 # %% accelerated gradient method
 def AGM(n, lam, delta, x_k, a, if_use_weight, tol, logname='AGM'+time.strftime('%H_%M_%S', time.gmtime()), result_fold = 'AGM_'+time.strftime('%H_%M_%S', time.gmtime())):
     
-    result_path = str(os.getcwd())+ '\\result\\'+result_fold
+    # result_path = str(os.getcwd())+ '\\result\\'+result_fold
+    result_path = os.path.join(r'/Users/leongvan/Documents/GitHub/OptFinal/code/result', result_fold, )
     
     if not os.path.exists(result_path):    
         os.makedirs(result_path)
@@ -296,40 +297,40 @@ if __name__ == "__main__":
     
     
     # wine dataset
-    a, label = load_dataset('wine')
+    a, label = load_dataset('vowel')
     # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
     # a = manifold.Isomap(n_components=2).fit_transform(a)
     X = np.zeros(a.shape)
-    x_k = AGM(a.shape[0], lam, delta, X, a, False, tol, logname='AGM_12')
+    x_k = AGM(a.shape[0], lam, delta, X, a, False, tol, logname='AGM_12_vowel')
     print('time consuming: ', time.time() - t1)
     
 
 
 # %% plot AGM
-
-filels = os.listdir(r'C:\Users\Lenovo\Desktop\OptFinal\code\result\AGM1')
-array_ls = []
-for file in filels:
-    file = file.split('.')[0]
-    df = pickle_read(file, folder='AGM1')
-    array_ls.append(df)
-
-def plot_points(arr, label):
-    c = pd.Series(label.reshape(-1,)).apply(lambda x: 'red' if x==1 else('blue' if x==2 else 'green'))
-    pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
-    # plt.xlim(-20,15)
-    plt.show()
-    
-I = 0
-for arr in array_ls[:2]:
-    print(I, 'th-----------------------')
-    # arr = TSNE(n_components=2,random_state=0,init='pca').fit_transform(arr)
-    # arr = manifold.Isomap(n_components=2).fit_transform(arr)
-    plot_points(arr, label)
-    I +=1
-
-
-# a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
-# a = manifold.Isomap(n_components=2).fit_transform(a)
-plot_points(a, label)
+#
+# filels = os.listdir(r'C:\Users\Lenovo\Desktop\OptFinal\code\result\AGM1')
+# array_ls = []
+# for file in filels:
+#     file = file.split('.')[0]
+#     df = pickle_read(file, folder='AGM1')
+#     array_ls.append(df)
+#
+# def plot_points(arr, label):
+#     c = pd.Series(label.reshape(-1,)).apply(lambda x: 'red' if x==1 else('blue' if x==2 else 'green'))
+#     pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
+#     # plt.xlim(-20,15)
+#     plt.show()
+#
+# I = 0
+# for arr in array_ls[:2]:
+#     print(I, 'th-----------------------')
+#     # arr = TSNE(n_components=2,random_state=0,init='pca').fit_transform(arr)
+#     # arr = manifold.Isomap(n_components=2).fit_transform(arr)
+#     plot_points(arr, label)
+#     I +=1
+#
+#
+# # a = TSNE(n_components=2,random_state=0,init='pca').fit_transform(a)
+# # a = manifold.Isomap(n_components=2).fit_transform(a)
+# plot_points(a, label)
 
