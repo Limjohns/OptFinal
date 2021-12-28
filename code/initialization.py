@@ -14,9 +14,10 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import scipy.io
 import timeit
-import os
 from scipy.spatial import distance_matrix
 
+import os 
+from scipy.spatial.distance import cdist
 #%% load data function
 
 def self_generate_cluster(n=100, sigma=1, c = [1,1]):
@@ -193,6 +194,18 @@ def log_read(logname = 'AGM'):
     return pd.DataFrame(all_rec)
 
 
+def cluster_check(X, max = 20):
+    K = range(1, max)
+    meandistortions = []
+    for k in K:
+        kmeans = KMeans(n_clusters=k)
+        kmeans.fit(X)
+        meandistortions.append(sum(np.min(cdist(X, kmeans.cluster_centers_, 'euclidean'), axis=1))/X.shape[0])
+        plt.plot(K, meandistortions, 'bx-')
+        plt.xlabel('k')
+        plt.ylabel('Average Dispersion')
+        plt.title('Selecting k with the Elbow Method')
+        plt.show()
 
 #%%  objective function class
 class ObjFunc():
@@ -270,7 +283,7 @@ class ObjFunc():
         elif y_norm > self.delta:
             return y/y_norm  #return vector
 
-    def hess_hub(self, xi, xj):
+    def hess_hub(self, xi, xj=0):
         '''
         Hessian of huber norm
         Parameters 
@@ -286,7 +299,7 @@ class ObjFunc():
         y = xi - xj
         y_norm = self.norm_sum_squ(y,0,squ=False)
         if y_norm <= self.delta:
-            return 1/self.delta
+            return np.eye(len(y))/self.delta
         elif y_norm > self.delta:
             return (y_norm**2*np.eye(len(y)) - np.dot(y,y.T)) / y_norm**3  #return matrix
         
@@ -402,7 +415,6 @@ class ObjFunc():
             small = max(i, j)
             large = min(i, j)
             return - self.hess_hub(self.X[small], self.X[large]) * self.weight(i,j)
-
 
 
     # def fill_upper_diag(self, X):
@@ -545,4 +557,6 @@ f = ObjFunc(X = X, a = a, grad_coef=coef, weights_mat=weights, delta=1e-3, lam=1
 # f.partial_grad_hub_sum(i=1,j=1)
 # grad  = f.grad_hub_sum_pairwise()
 # upper = f.triangular_hess_hub_sum()
+
+#%% hess matrix test
 

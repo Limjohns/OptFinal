@@ -73,7 +73,7 @@ def armijo(d, obj, s, sigma, gamma):
                     ,delta=obj.delta
                     ,lam=obj.lam
                     ,if_use_weight=obj.if_use_weight)
-    while obj_2.obj_func() > obj.obj_func()+gamma*alpha*(np.dot((-obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1)))[0][0]:
+    while obj_2.obj_func() > obj.obj_func()+gamma*alpha*(np.dot((obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1)))[0][0]:
         alpha = alpha * sigma
         obj_2 = ObjFunc(X=obj.X+alpha*d
                         ,a=obj.a
@@ -128,7 +128,7 @@ def newton_cg(obj, s, sigma, gamma, tol):
     
     while grad_x_norm > tol and iteration < 5000:
         iteration += 1
-        
+        t1 = time.time()
         # CG direction d
         cg_tol = min(1, grad_x_norm**0.1) * grad_x_norm
         d      = cg(obj, grad=grad_x, tol=cg_tol)
@@ -141,33 +141,43 @@ def newton_cg(obj, s, sigma, gamma, tol):
             d = -grad_x
             
         # choose step size
+        # alpha_bck, obj2  = armijo(d, obj, s=s, sigma=sigma, gamma=gamma)
         alpha, obj  = armijo(d, obj, s=s, sigma=sigma, gamma=gamma)
+        # alpha_L = obj.delta / (1 + len(obj.X)*obj.lam)
+        # alpha = obj.delta / (1 + len(obj.X)*obj.lam)
+        # alpha = max(alpha_bck, alpha_L)
+        # obj = ObjFunc(X=obj.X+alpha*d, a=obj.a, grad_coef=obj.grad_coef, delta=obj.delta, lam=obj.lam, if_use_weight=obj.if_use_weight)
         
         # update iterating parameters
+        # obj = ObjFunc(X=obj.X+alpha*d, a=obj.a, grad_coef=obj.grad_coef, delta=obj.delta, lam=obj.lam, if_use_weight=obj.if_use_weight)
         grad_x      = obj.grad_obj_func()
         grad_x_norm = obj.norm_sum_squ(grad_x, squ=False)
         
         print(  
-            "Iteration:",    iteration, 
+            "Iteration:",      iteration, 
             "\nnorm of grad:", grad_x_norm,
+            "\nalpha:",        alpha,
+            # "\nd:",            d,
+            "\ntime: ",        time.time()-t1
             )
         
     return obj.X
 #%% test Newton-CG
 if __name__ == "__main__":
     t1 = time.time()
-    X  = np.array([[1,1], [1,1], [2,2], [3,3]])
-    a = np.array([[1,1],[1,1],[2,2],[2,2]])
-    coef = grad_hub_coef(X)
-    f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
-    x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-3)
-    # n1 = 100
-    # n2 = 100
-    # a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=2,c1=[1,1],c2=[3,3])
-    # X = np.array([[2,2] for i in np.arange(n1+n2)]) # initial point
+    # X  = np.array([[1,1], [1,3], [2,2], [3,3]])
+    # a = np.array([[1,1],[1,6],[2,2],[2,2]])
     # coef = grad_hub_coef(X)
-    # x_k = AGM(n1+n2, lam, delta, X, a, coef, False, tol)
-    # f = ObjFunc(X=X, a=a, grad_coef=coef, delta=delta, lam=lam, if_use_weight=False)
+    # f = ObjFunc(X = X, a = a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
+    # x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1e-2)
+    n1 = 20
+    n2 = 20
+    a, syn_label = self_dataset(n1=n1,n2=n2,sigma1=1,sigma2=1,c1=[1,1],c2=[10,10])
+    # X = np.array([[5,2] for i in np.arange(n1+n2)]) # initial point
+    X = a + np.random.randn(len(a), 2)
+    coef = grad_hub_coef(X)
+    f = ObjFunc(X=X, a=a, grad_coef=coef, delta=1e-3, lam=0.05, if_use_weight=False)
+    x_k = newton_cg(obj=f, s=1, sigma=0.5, gamma=0.1, tol=1)
     print('time consuming: ', time.time()-t1)
 
 
