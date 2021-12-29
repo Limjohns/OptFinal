@@ -86,17 +86,41 @@ def cluster_norm(pickle_nm = None, folder='AGM1', tol = 0.5):
     return cluster_label_arr
 
 
+#%% gif
+a = pd.read_csv(r'E:\OneDrive\2021-2022 研一上\MDS6106-Optimization\homework\Final\code\other\a_bck_NCG_delta0.1_lam0.35_tol1_3c.csv')
+a.columns = ['idx',0,1]
+a = a.set_index('idx')
+
+arr = a.to_numpy()
+# simpleToPlot(arr, pic_path = str(os.getcwd())+'\\pic')
+
+
+rawToPlot(arr, folder = 'bck_NCG_delta0.1_lam0.35_tol1_rerun', tol = 0.01, L_R_U_D=[-10, 30, 20, -5] , max_pic=None, pic_folder = 'rerun_NCG', show_pic = False)
+
+
+pic_path = os.listdir(os.getcwd()+'\\pic\\rerun_NCG')
+idx = [int(pi.split('.')[0]) for pi in pic_path]
+idxdf = pd.DataFrame([idx,pic_path]).T
+idxdf = idxdf.set_index(0).sort_index()
+
+pic_path = list(idxdf[1])
+pic_path = ['E:\\OneDrive\\2021-2022 研一上\\MDS6106-Optimization\\homework\\Final\\code\\pic\\rerun_NCG\\'+pi for pi in pic_path]
+plotsToGiF(pic_path, gifname='bck_NCG_delta0.1_lam0.35_tol1_rerun2')
+
 #%% 
 def plotsToGiF(pic_path, gifname):
     '''convert a folder pictures to gif'''
     images = []
     for filename in pic_path:
         images.append(imageio.imread(filename))
-    imageio.mimsave('/gif'+ gifname +'.gif', images)
+    imageio.mimsave(os.getcwd()+'\\gif\\'+ gifname +'.gif', images)
+
+
+
 
 def simpleToPlot(arr, pic_path = str(os.getcwd())+'\\pic'):
 
-    pd.DataFrame(arr).plot.scatter(x=0, y=1, c=c)
+    pd.DataFrame(arr).plot.scatter(x=0, y=1)
     plt.savefig(pic_path+'\\a.png')
     plt.show()
 
@@ -124,6 +148,7 @@ def rawToPlot(a, folder = 'AGM1', tol = 0.5, L_R_U_D=[None, None, None, None] , 
     ### color dict ###
     def generate_color(kind):
         color_ls = ['r','g','b','#1e1e1e','y']
+        random.seed(0)
         for i in range(kind):
             color_ls.extend(["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])])
         return color_ls 
@@ -138,17 +163,19 @@ def rawToPlot(a, folder = 'AGM1', tol = 0.5, L_R_U_D=[None, None, None, None] , 
 
         label = cluster_norm(pickle_nm = file, folder=folder, tol = tol)
 
-        c     = pd.Series(label.reshape(-1,)).apply(lambda x: color_dict[x])
 
         categories = list(set(label.reshape(-1,).tolist()))
         colors_ls  = generate_color(len(categories))[:len(categories)]
         # color - categories mapping
         color_dict = dict(zip(categories, colors_ls))
         # Plotting 
+
+        c     = pd.Series(label.reshape(-1,)).apply(lambda x: color_dict[x])
+
         pd.DataFrame(a).plot.scatter(x=0, y=1, c=c)
         plt.xlim(L_R_U_D[0], L_R_U_D[1])
         plt.ylim(L_R_U_D[3], L_R_U_D[2])
-        plt.title(file + 'th Iteration')
+        plt.title(file + 'th Iteration ('+str(len(categories))+' clusters)')
         plt.xlabel('x')
         plt.ylabel('y')
         plt.savefig(pic_path+'\\'+file+'.png')
@@ -281,10 +308,9 @@ def multi_convergence(log_ls, fig_name,title_nm = None, max_iter = 100, legend_n
 #%% run time plot
 
 fl_ls     = os.listdir(os.getcwd()+'\\log')
-fl_ls     = ['E:\\OneDrive\\2021-2022 研一上\\MDS6106-Optimization\\homework\\Final\\log\\bck_NCG_delta0.1_lam0.1_tol1_wine.log']
 log_ls    = []
-legend_ls = []
-df_ls  = []
+legend_ls = ['AGM','NCG']
+df_ls     = []
 
 for file in fl_ls:
     file  = file.split('.log')[0]
@@ -293,19 +319,34 @@ for file in fl_ls:
     title = file.split('_')
     # title = 'Backtrack NCG'+'-'+ title[3] 
     # convergence_plot(file, title_nm = title, max_iter = None)
-    legend_ls.append(title[3])
     log_ls.append(file)
     df_ls.append(df)
     
-
+    print(file)
     print(title[3])
-    print(df['time'].apply(lambda x: float(x)).sum(),'s')
-    cluster_norm(pickle_nm = None, folder=file, tol = 0.05)
+    print(df['time'].dropna().apply(lambda x: float(x)).sum(),'s')
+    cluster_norm(pickle_nm = None, folder=file, tol = 0.01)
     print('---------------------')
 
 
-# title_nm = 'Backtrack NCG'
-# multi_convergence(log_ls, fig_name = 'bkt_ncg_diff_lambda_',title_nm = title_nm, max_iter = 100, legend_name = legend_ls)
+
+    # path = str(os.getcwd()) + '\\log\\' + file + '.log'
+    # with open(path) as f:
+    #     records = []
+    #     for line in f.readlines():
+    #         ls = line.split(' | ')
+    #         records.append(ls[-1].strip())
+    #     all_rec = []
+    #     for rec in records:
+    #         iter_rec = rec.split(',')
+    #         iter_rec = [rec.split(":")[-1] for rec in iter_rec]
+    #         all_rec.append(iter_rec)
+    #     df = pd.DataFrame(all_rec)
+    #     col_name = [rc.split(":")[0] for rc in rec.split(',')]
+
+
+title_nm = 'Backtrack NCG & AGM'
+multi_convergence(log_ls, fig_name = 'bkt_ncg_diff_lambda_',title_nm = title_nm, max_iter = 100, legend_name = legend_ls)
 
 
 
