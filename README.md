@@ -18,9 +18,9 @@ $$
 where:
 -  $ \lambda >0 $ is a regularization paramter  
 -  $ \lVert \cdot \rVert _{p} $ is the standard Eucilidean norm
--  $ X^{*} = (x_{1}^{*}, \dots, x_{n}^{*}) $ is the optimal solution
+-  $ X^{\*} = (x_{1}^{\*}, \dots, x_{n}^{\*}) $ is the optimal solution
 
-then $a_{i}$ and $a_{j}$ will be assigned as the same cluster iff.  $x_{i}^{*} = x_{j}^{*}$ or $\lVert x_{i}^{*} - x_{j}^{*}\rVert \le \epsilon $
+then $a_{i}$ and $a_{j}$ will be assigned as the same cluster iff.  $x_{i}^{\*} = x_{j}^{\*}$ or $\lVert x_{i}^{\*} - x_{j}^{\*}\rVert \le \epsilon $
 
 #### Huber-type Norm
 we choose $p = 2$ and we first consider a smooth variant of the clustering problem: 
@@ -51,22 +51,30 @@ $$
 In order to speed up the computing in each iteration, we can rewrite the gradient and Hessian in the form of matrix calculation.
 ##### (Gradient Matrix Expression) 
 The full matrix expression of the gradient can be write down below as $ G:$ 
-$$
-G = \left(\begin{array}{c}
+
+
+$$ G = \tiny 
+  \left(\begin{array}{c}
 +\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\
 -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\
 -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\
 \vdots \\
 -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
-\end{array}\right) \\ \; \\ \;\;\;\; =
+\end{array}\right)$$
+
+$$  
+G = \scriptsize
  C(\nabla \varphi_{\text {hub}}\left(x_{1}-x_{2}\right) \; \nabla \varphi_{\text{hub}}\left(x_{1}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{2}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{n-1}-x_{n}\right))^{T}
 $$
 
 Noted that, if we calculate the full gradient, the huber norm should be computed in pairwise, which should be written in two **for loop**. 
 
 To speed up this process, the gradient can be written in the following multiplation of matrixes: 
+<!-- <img src="https://latex.codecogs.com/svg.image?\left(\begin{array}{cccccccc}1&space;&&space;-1&space;&&space;0&space;&&space;0&space;&&space;0&space;&&space;\cdots&space;&&space;0&space;&&space;0&space;\\1&space;&&space;0&space;&&space;-1&space;&&space;0&space;&&space;0&space;&&space;\cdots&space;&&space;0&space;&&space;0&space;\\\vdots&space;&&space;\vdots&space;&&space;\vdots&space;&&space;\vdots&space;&&space;\vdots&space;&&space;\ddots&space;&&space;\vdots&space;&&space;\vdots&space;\\1&space;&&space;0&space;&&space;0&space;&&space;0&space;&&space;0&space;&&space;\cdots&space;&&space;0&space;&&space;-1&space;\\0&space;&&space;1&space;&&space;-1&space;&&space;0&space;&&space;0&space;&&space;\cdots&space;&&space;0&space;&&space;0&space;\\0&space;&&space;1&space;&&space;0&space;&&space;-1&space;&&space;0&space;&&space;\cdots&space;&&space;0&space;&&space;0&space;\\\vdots&space;&&space;\vdots&space;&&space;\vdots&space;&&space;\vdots&space;&&space;\vdots&space;&&space;\ddots&space;&&space;\vdots&space;&&space;\vdots&space;\\0&space;&&space;0&space;&&space;0&space;&&space;0&space;&&space;0&space;&&space;\cdots&space;&&space;1&space;&&space;-1\end{array}\right)\left(\begin{array}{c}x_{1}&space;\\x_{2}&space;\\x_{3}&space;\\\vdots&space;\\x_{n-1}&space;\\x_{n}\end{array}\right)" title="\left(\begin{array}{cccccccc}1 & -1 & 0 & 0 & 0 & \cdots & 0 & 0 \\1 & 0 & -1 & 0 & 0 & \cdots & 0 & 0 \\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\1 & 0 & 0 & 0 & 0 & \cdots & 0 & -1 \\0 & 1 & -1 & 0 & 0 & \cdots & 0 & 0 \\0 & 1 & 0 & -1 & 0 & \cdots & 0 & 0 \\\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\0 & 0 & 0 & 0 & 0 & \cdots & 1 & -1\end{array}\right)\left(\begin{array}{c}x_{1} \\x_{2} \\x_{3} \\\vdots \\x_{n-1} \\x_{n}\end{array}\right)" /> -->
 
-$$
+
+$$G = 
+\small
 \left(\begin{array}{cccccccc}
 1 & -1 & 0 & 0 & 0 & \cdots & 0 & 0 \\
 1 & 0 & -1 & 0 & 0 & \cdots & 0 & 0 \\
@@ -86,7 +94,7 @@ x_{n}
 \end{array}\right)
 $$
 
-##### (Gradient Matrix Expression) 
+##### (Hessian Matrix Expression) 
 
 
 #### Accerlated Gradient Method
