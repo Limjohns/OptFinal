@@ -16,9 +16,9 @@ $$
 $$
 
 where:
--  $\lambda >0$ is a regularization paramter  
--  $\lVert \cdot \rVert _{p}$ is the standard Eucilidean norm
-- $X^{*} = (x_{1}^{*}, \dots, x_{n}^{*})$ is the optimal solution
+-  $ \lambda >0 $ is a regularization paramter  
+-  $ \lVert \cdot \rVert _{p} $ is the standard Eucilidean norm
+-  $ X^{*} = (x_{1}^{*}, \dots, x_{n}^{*}) $ is the optimal solution
 
 then $a_{i}$ and $a_{j}$ will be assigned as the same cluster iff.  $x_{i}^{*} = x_{j}^{*}$ or $\lVert x_{i}^{*} - x_{j}^{*}\rVert \le \epsilon $
 
@@ -49,7 +49,44 @@ $$
 
 #### Matrix Improvement 
 In order to speed up the computing in each iteration, we can rewrite the gradient and Hessian in the form of matrix calculation.
-##### Gradient Matrix Expression 
+##### (Gradient Matrix Expression) 
+The full matrix expression of the gradient can be write down below as $ G:$ 
+$$
+G = \left(\begin{array}{c}
++\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\
+\vdots \\
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
+\end{array}\right) \\ \; \\ \;\;\;\; =
+ C(\nabla \varphi_{\text {hub}}\left(x_{1}-x_{2}\right) \; \nabla \varphi_{\text{hub}}\left(x_{1}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{2}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{n-1}-x_{n}\right))^{T}
+$$
+
+Noted that, if we calculate the full gradient, the huber norm should be computed in pairwise, which should be written in two **for loop**. 
+
+To speed up this process, the gradient can be written in the following multiplation of matrixes: 
+
+$$
+\left(\begin{array}{cccccccc}
+1 & -1 & 0 & 0 & 0 & \cdots & 0 & 0 \\
+1 & 0 & -1 & 0 & 0 & \cdots & 0 & 0 \\
+\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
+1 & 0 & 0 & 0 & 0 & \cdots & 0 & -1 \\
+0 & 1 & -1 & 0 & 0 & \cdots & 0 & 0 \\
+0 & 1 & 0 & -1 & 0 & \cdots & 0 & 0 \\
+\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & 0 & 0 & 0 & 0 & \cdots & 1 & -1
+\end{array}\right)\left(\begin{array}{c}
+x_{1} \\
+x_{2} \\
+x_{3} \\
+\vdots \\
+x_{n-1} \\
+x_{n}
+\end{array}\right)
+$$
+
+##### (Gradient Matrix Expression) 
 
 
 #### Accerlated Gradient Method
