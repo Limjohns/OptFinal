@@ -1,3 +1,14 @@
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
 <span style="font-family: 'Times New Roman'">
 
 
@@ -16,11 +27,12 @@ $$
 $$
 
 where:
--  $ \lambda >0 $ is a regularization paramter  
--  $ \lVert \cdot \rVert _{p} $ is the standard Eucilidean norm
--  $ X^{\*} = (x_{1}^{\*}, \dots, x_{n}^{\*}) $ is the optimal solution
+-  $\lambda > 0$ is a regularization paramter  
+-  $\lVert \cdot \rVert_{p}$ is the standard Eucilidean norm
+-  $X^{*} = (x_{1}^{*}, \dots, x_{n}^{*})$ is the optimal solution]
 
-then $a_{i}$ and $a_{j}$ will be assigned as the same cluster iff.  $x_{i}^{\*} = x_{j}^{\*}$ or $\lVert x_{i}^{\*} - x_{j}^{\*}\rVert \le \epsilon $
+
+then $a_{i}$ and $a_{j}$ will be assigned as the same cluster iff.  $x_{i}^{*} = x_{j}^{*}$ or $\lVert x_{i}^{*} - x_{j}^{*}\rVert \le \epsilon$
 
 #### Huber-type Norm
 we choose $p = 2$ and we first consider a smooth variant of the clustering problem: 
