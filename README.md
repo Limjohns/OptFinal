@@ -56,20 +56,18 @@ In order to speed up the computing in each iteration, we can rewrite the gradien
 The full matrix expression of the gradient can be write down below as $G:$ 
 
 
-$$
-\scriptsize G = \left(\begin{array}{c}
+<img src="https://latex.codecogs.com/svg.image?G&space;=&space;\left(\begin{array}{c}&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{1}-x_{1}\right)&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{1}-x_{2}\right)&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{1}-x_{3}\right)&plus;\cdots&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{1}-x_{n}\right)&space;\\\\-\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{1}-x_{2}\right)&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{2}-x_{2}\right)&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{2}-x_{3}\right)&plus;\cdots&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{2}-x_{n}\right)&space;\\\\-\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{1}-x_{3}\right)-\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{2}-x_{3}\right)&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{3}-x_{3}\right)&plus;\cdots&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{3}-x_{n}\right)&space;\\\\\vdots&space;\\\\-\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{1}-x_{n}\right)-\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{2}-x_{n}\right)-\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{3}-x_{n}\right)-\cdots&plus;\nabla&space;\varphi_{\text&space;{hub&space;}}\left(x_{n}-x_{n}\right)\end{array}\right)" title="G = \left(\begin{array}{c}+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\\\-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\\\\vdots \\\\-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)\end{array}\right)" />
+
+<!-- $$G = \left(\begin{array}{c}
 +\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\\\
 -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\
-
 -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\\\
-
 \vdots \\\\
-
 -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
-\end{array}\right)$$
+\end{array}\right)$$ -->
 
 $$  
-\scriptsize G = 
+\scriptsize G = \tiny
  C(\nabla \varphi_{\text {hub}}\left(x_{1}-x_{2}\right) \; \nabla \varphi_{\text{hub}}\left(x_{1}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{2}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{n-1}-x_{n}\right))^{T}
 $$
 
