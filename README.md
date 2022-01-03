@@ -56,17 +56,21 @@ In order to speed up the computing in each iteration, we can rewrite the gradien
 The full matrix expression of the gradient can be write down below as $G:$ 
 
 
-$$ G = \tiny 
-  \left(\begin{array}{c}
+$$ \scriptsize G = 
+  \left(\begin{array}{c}\tiny 
 +\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\\\
--\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\
--\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\\\
-\vdots \\\\
--\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
+
+\tiny -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots\tiny+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\
+
+\tiny -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\\\
+
+\tiny \vdots \\\\
+
+\tiny -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
 \end{array}\right)$$
 
 $$  
-G = \scriptsize
+\scriptsize G = 
  C(\nabla \varphi_{\text {hub}}\left(x_{1}-x_{2}\right) \; \nabla \varphi_{\text{hub}}\left(x_{1}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{2}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{n-1}-x_{n}\right))^{T}
 $$
 
@@ -78,7 +82,7 @@ $$G = \nabla^{2}\varphi(
 \left(\begin{array}{cccccccc}
 1 & -1 & 0 & 0 & 0 & \cdots & 0 & 0 \\\\
 1 & 0 & -1 & 0 & 0 & \cdots & 0 & 0 \\\\
-\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\\
+\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\\\
 1 & 0 & 0 & 0 & 0 & \cdots & 0 & -1 \\\\
 0 & 1 & -1 & 0 & 0 & \cdots & 0 & 0 \\\\
 0 & 1 & 0 & -1 & 0 & \cdots & 0 & 0 \\\\
