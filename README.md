@@ -168,7 +168,7 @@ $$t_{k}=\scriptsize{1 \over 2}(1 + \sqrt{1+4t_{k-1}^{2}}), \normalsize t_{-1} = 
        * if $(p^{j})^{\top}Ap^{j} \le 0$ return $d^{k} = v^{j}$
        * compute $\sigma_{j} = {{\lVert r^{j} \rVert^{2}} \over {(p^{j})^{\top}Ap^{j}} }$ , $v^{j+1} = v^{j} + \sigma_{j}p^{j}, r^{j+1} = r^{j} + \sigma_{j}Ap^{j}.$
        * If $\lVert r^{j+1} \rVert \le \text{tol}$ then **STOP** and return $d^{k} = v^{j+1}.$ 
-       * Calculate $\beta_{j+1} = {{\lVert r^{j+1} \rVert}^{2} \over {\lVert r^{j} \rVert}^{2}}$ and $p^{j+1}=-r^{j+1}+\beta_{j+1}p^{j}
+       * Calculate $\beta_{j+1} = {{\lVert r^{j+1} \rVert}^{2} \over {\lVert r^{j} \rVert}^{2}}$ and $p^{j+1}=-r^{j+1}+\beta_{j+1}p^{j}$
    4. Calculate $\alpha_{k}$ via backtracking and update $x^{k}$
    5. If gradient less than $\epsilon$, then STOP and output.
 
