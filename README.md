@@ -67,7 +67,7 @@ The full matrix expression of the gradient can be write down below as $G:$
 \end{array}\right)$$ -->
 
 $$  
-\scriptsize G = \tiny
+\scriptsize G = 
  C(\nabla \varphi_{\text {hub}}\left(x_{1}-x_{2}\right) \; \nabla \varphi_{\text{hub}}\left(x_{1}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{2}-x_{3}\right) \dotsm \nabla \varphi_{\text{hub}}\left(x_{n-1}-x_{n}\right))^{T}
 $$
 
