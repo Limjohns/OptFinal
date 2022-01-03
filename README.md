@@ -56,8 +56,9 @@ In order to speed up the computing in each iteration, we can rewrite the gradien
 The full matrix expression of the gradient can be write down below as $G:$ 
 
 
-$$ \scriptsize G = 
-  \left(\begin{array}{c}\tiny 
+$$
+G = 
+  \left(\begin{array}{c} \tiny 
 +\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\\\
 
 \tiny -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots\tiny+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\
