@@ -102,7 +102,7 @@ Newton iteration, we also figure out how to express it usingmatrix operations. I
 Similarly, we first give the detailed format of hessian matrix of the second item which is: 
 
 $$
-H=\tiny \left(\begin{array}{cccc}
+H=\scriptsize \left(\begin{array}{cccc}
 \sum_{j=1}^{n} \nabla^{2} \varphi\left(x_{1}-x_{j}\right) & -\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \cdots & -\nabla^{2} \varphi\left(x_{1}-x_{n}\right) \\\\
 -\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \sum_{j=2}^{n} \nabla^{2} \varphi\left(x_{2}-x_{j}\right)+\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \cdots & -\nabla^{2} \varphi\left(x_{2}-x_{n}\right) \\\\
 \vdots & \vdots & \ddots & \vdots \\\\
