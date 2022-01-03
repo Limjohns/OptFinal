@@ -1,10 +1,10 @@
-
-
+<span style="font-family: 'Times New Roman'">
 
 # **Convex Clustering Optimization Problem**
 
 This problem is the final project for the lecture Optimization for MDS in CUHKSZ. 
-Anyway, Thank you, Andre!  
+
+**Thank you, Andre!**  
 
 ## **Problem Description**
 
@@ -18,10 +18,10 @@ $$
 where:
 -  $\lambda > 0$ is a regularization paramter  
 -  $\lVert \cdot \rVert_{p}$ is the standard Eucilidean norm
--  $X^{*} = (x_{1}^{*}, \dots, x_{n}^{*})$ is the optimal solution]
+-  $X^{*} = (x_{1}^{\*}, \dots, x_{n}^{\*})$ is the optimal solution]
 
 
-then $a_{i}$ and $a_{j}$ will be assigned as the same cluster iff.  $x_{i}^{*} = x_{j}^{*}$ or $\lVert x_{i}^{*} - x_{j}^{*}\rVert \le \epsilon$
+then $a_{i}$ and $a_{j}$ will be assigned as the same cluster iff.  $x_{i}^{\*} = x_{j}^{\*}$ or $\lVert x_{i}^{\*} - x_{j}^{\*}\rVert \le \epsilon$
 
 #### Huber-type Norm
 we choose $p = 2$ and we first consider a smooth variant of the clustering problem: 
@@ -33,7 +33,7 @@ where:
 
 $$
      \varphi_{hub}(y) = \begin{cases}
-                            {{1\over{2\delta}}{\lVert y \rVert^{2}}} &\text if {\rVert y \lVert \le \delta} \\
+                            {{1\over{2\delta}}{\lVert y \rVert^{2}}} &\text if {\rVert y \lVert \le \delta} \\\\
                             {\lVert y \rVert - {\delta \over{2}}}& \text if {\rVert y \lVert > \delta}
                         \end{cases}
 $$
@@ -43,7 +43,7 @@ By some derivation, we can have the gradient of the Huber-norm function:
 
 $$
    \nabla \varphi_{hub}(y) = \begin{cases}
-                                {t / {\delta}} &\text if {\rVert y \lVert \le \delta} \\
+                                {t / {\delta}} &\text if {\rVert y \lVert \le \delta} \\\\
                                 { {y / {\lVert y \rVert}}}& \text if {\rVert y \lVert > \delta}
                             \end{cases}
 $$
@@ -58,10 +58,10 @@ The full matrix expression of the gradient can be write down below as $G:$
 
 $$ G = \tiny 
   \left(\begin{array}{c}
-+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\
--\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\
--\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\
-\vdots \\
++\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\\\
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\\\
+\vdots \\\\
 -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
 \end{array}\right)$$
 
@@ -76,20 +76,20 @@ To speed up this process, the gradient can be written in the following multiplat
 $$G = \nabla^{2}\varphi(
 \scriptsize
 \left(\begin{array}{cccccccc}
-1 & -1 & 0 & 0 & 0 & \cdots & 0 & 0 \\
-1 & 0 & -1 & 0 & 0 & \cdots & 0 & 0 \\
-\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
-1 & 0 & 0 & 0 & 0 & \cdots & 0 & -1 \\
-0 & 1 & -1 & 0 & 0 & \cdots & 0 & 0 \\
-0 & 1 & 0 & -1 & 0 & \cdots & 0 & 0 \\
-\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\
+1 & -1 & 0 & 0 & 0 & \cdots & 0 & 0 \\\\
+1 & 0 & -1 & 0 & 0 & \cdots & 0 & 0 \\\\
+\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\\
+1 & 0 & 0 & 0 & 0 & \cdots & 0 & -1 \\\\
+0 & 1 & -1 & 0 & 0 & \cdots & 0 & 0 \\\\
+0 & 1 & 0 & -1 & 0 & \cdots & 0 & 0 \\\\
+\vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots \\\\
 0 & 0 & 0 & 0 & 0 & \cdots & 1 & -1
 \end{array}\right)\left(\begin{array}{c}
-x_{1} \\
-x_{2} \\
-x_{3} \\
-\vdots \\
-x_{n-1} \\
+x_{1} \\\\
+x_{2} \\\\
+x_{3} \\\\
+\vdots \\\\
+x_{n-1} \\\\
 x_{n}
 \end{array}\right))
 $$
@@ -102,9 +102,9 @@ Similarly, we first give the detailed format of hessian matrix of the second ite
 
 $$
 H=\tiny \left(\begin{array}{cccc}
-\sum_{j=1}^{n} \nabla^{2} \varphi\left(x_{1}-x_{j}\right) & -\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \cdots & -\nabla^{2} \varphi\left(x_{1}-x_{n}\right) \\
--\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \sum_{j=2}^{n} \nabla^{2} \varphi\left(x_{2}-x_{j}\right)+\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \cdots & -\nabla^{2} \varphi\left(x_{2}-x_{n}\right) \\
-\vdots & \vdots & \ddots & \vdots \\
+\sum_{j=1}^{n} \nabla^{2} \varphi\left(x_{1}-x_{j}\right) & -\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \cdots & -\nabla^{2} \varphi\left(x_{1}-x_{n}\right) \\\\
+-\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \sum_{j=2}^{n} \nabla^{2} \varphi\left(x_{2}-x_{j}\right)+\nabla^{2} \varphi\left(x_{1}-x_{2}\right) & \cdots & -\nabla^{2} \varphi\left(x_{2}-x_{n}\right) \\\\
+\vdots & \vdots & \ddots & \vdots \\\\
 -\nabla^{2} \varphi\left(-x_{n}+x_{1}\right) & -\nabla^{2} \varphi\left(-x_{n}+x_{2}\right) & \cdots & \sum_{j=1}^{n} \nabla^{2} \varphi\left(x_{j}-x_{n}\right)
 \end{array}\right)
 $$
@@ -120,17 +120,17 @@ As for the $JB$, the matrix can be expressed as:
 $$
 JB= \scriptsize
 \begin{pmatrix}
-	0 & 1 & 1 & \cdots & 1 \\ 
-	1 & 0 & 1 & \cdots & 1 \\  
-	1 & 1 & 0 & \cdots & 1 \\ 
-	\vdots & \vdots & \vdots & \ddots & \vdots \\
+	0 & 1 & 1 & \cdots & 1 \\\\
+	1 & 0 & 1 & \cdots & 1 \\\\
+	1 & 1 & 0 & \cdots & 1 \\\\ 
+	\vdots & \vdots & \vdots & \ddots & \vdots \\\\
 	1 & 1 & 1 & \cdots & 0
 \end{pmatrix}
 \begin{pmatrix}
-	x_{1}-x_{1} & x_{1}-x_{2} & x_{1}-x_{3} & \cdots & x_{1}-x_{n} \\ 
-	x_{1}-x_{2} & x_{2}-x_{2} & x_{2}-x_{3} & \cdots & x_{2}-x_{n} \\  
-	x_{1}-x_{3} & x_{2}-x_{3} & x_{3}-x_{3} & \cdots & x_{3}-x_{n} \\ 
-	\vdots & \vdots & \vdots & \ddots & \vdots \\
+	x_{1}-x_{1} & x_{1}-x_{2} & x_{1}-x_{3} & \cdots & x_{1}-x_{n} \\\\ 
+	x_{1}-x_{2} & x_{2}-x_{2} & x_{2}-x_{3} & \cdots & x_{2}-x_{n} \\\\  
+	x_{1}-x_{3} & x_{2}-x_{3} & x_{3}-x_{3} & \cdots & x_{3}-x_{n} \\\\ 
+	\vdots & \vdots & \vdots & \ddots & \vdots \\\\
 	x_{1}-x_{n} & x_{2}-x_{n} & x_{3}-x_{n} & \cdots & x_{n}-x_{n}
 \end{pmatrix}
 $$
@@ -172,20 +172,6 @@ $$t_{k}=\scriptsize{1 \over 2}(1 + \sqrt{1+4t_{k-1}^{2}}), \normalsize t_{-1} = 
    5. If gradient less than $\epsilon$, then STOP and output.
 
 
-
-
-
-
 </span>
 
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      processEscapes: true
-    }
-  });
-</script>
-<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
-<span style="font-family: 'Times New Roman'">
