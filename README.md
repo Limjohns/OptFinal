@@ -57,17 +57,15 @@ The full matrix expression of the gradient can be write down below as $G:$
 
 
 $$
-G = 
-  \left(\begin{array}{c} \tiny 
+\scriptsize G = \left(\begin{array}{c}
 +\nabla \varphi_{\text {hub }}\left(x_{1}-x_{1}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right) \\\\
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\
 
-\tiny -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{2}\right)+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\cdots\tiny+\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right) \\\\
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\\\
 
-\tiny -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{3}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{3}\right)+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{3}\right)+\cdots+\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right) \\\\
+\vdots \\\\
 
-\tiny \vdots \\\\
-
-\tiny -\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
+-\nabla \varphi_{\text {hub }}\left(x_{1}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{2}-x_{n}\right)-\nabla \varphi_{\text {hub }}\left(x_{3}-x_{n}\right)-\cdots+\nabla \varphi_{\text {hub }}\left(x_{n}-x_{n}\right)
 \end{array}\right)$$
 
 $$  
