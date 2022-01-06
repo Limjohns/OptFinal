@@ -48,6 +48,8 @@ $$
                             \end{cases}
 $$
 
+
+## **Vectorize the Problem**
 #### Matrix Improvement 
 Main difficulties lie in the 2nd term in the objective function. 
 
@@ -146,6 +148,8 @@ While the calculation of $B$ is the same as the processing of $G$ in the former 
     The performance in our code shows that the matrices 
     processing can reduce the CPU time by 50% in each iteration.
 
+## **Optimization Algo**
+
 #### Accerlated Gradient Method
 
 **Algorithm of AGM**
@@ -156,7 +160,6 @@ While the calculation of $B$ is the same as the processing of $G$ in the former 
 Here we choose constant stepsize with parameters:
 $$alpha_{k} = {1 \over L}, \beta_{k} = {{t_{k-1}-1} \over t_{k}}$$
 $$t_{k}=\scriptsize{1 \over 2}(1 + \sqrt{1+4t_{k-1}^{2}}), \normalsize t_{-1} = t_{0}=1$$
-
 
 
 #### Newton-CG Method
