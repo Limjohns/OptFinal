@@ -9,8 +9,8 @@
 '''
 
 # %%
-from initialization import load_dataset, self_generate_cluster, self_dataset,  pickle_write, pickle_read, log_read
-from initialization import ObjFunc
+from initialization import *
+# from initialization import ObjFunc
 import numpy as np
 import pandas as pd
 import time
@@ -396,7 +396,7 @@ if __name__ == "__main__":
     a, syn_label = self_dataset(n=n,sigma=sigma,c=c)
     # X = np.array([[5,2] for i in np.arange(sum(n))]) # initial point
     X = a + np.random.randn(len(a), 2)
-    x_k = AGM(sum(n), lam, delta, X, a, True, tol, logname='weighted_AGM_delta1e-1_lam0.5_tol1e-1_3c', result_fold = 'weighted_AGM_delta1e-1_lam0.5_tol1e-1_3c')
+    x_k = AGM(sum(n), lam, delta, X, a, False, tol, logname='weighted_AGM_delta1e-1_lam0.5_tol1e-1_3c', result_fold = 'weighted_AGM_delta1e-1_lam0.5_tol1e-1_3c')
 
     
     '''real dataset'''
@@ -414,3 +414,5 @@ if __name__ == "__main__":
     
     print('time consuming: ', time.time() - t1)
 
+
+# %%

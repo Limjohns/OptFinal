@@ -216,6 +216,15 @@ def log_read(logname = 'AGM'):
     df.columns = col_name
     return df
 
+
+
+
+
+
+
+
+
+
 #%%  objective function class
 class ObjFunc():
     '''Objective Function Class'''
