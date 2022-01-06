@@ -2,7 +2,7 @@
 
 # **Convex Clustering Optimization Problem**
 
-This problem is the final project for the lecture Optimization for MDS in CUHKSZ. 
+This problem is the final project of the lecture Optimization for MDS in CUHKSZ. 
 
 **Thank you, Andre!**  
 
