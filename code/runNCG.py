@@ -16,8 +16,6 @@ import time
 import os
 import random
 
-
-
 # %% Newton-CG method
 def cg(obj, grad, tol, maxiter=10):
     # initialize iterating parameters
