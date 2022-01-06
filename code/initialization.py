@@ -20,6 +20,8 @@ import os
 from scipy.spatial import distance_matrix
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
+import logging
+
 
 #%% load data function
 
@@ -187,6 +189,26 @@ def get_weights(a, topnum = 5):
 
 
 ### read log and pickle
+
+def my_custom_logger(logger_name, level=logging.INFO):
+    """
+    Method to return a custom logger with the given name and level
+    """
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level) 
+    format_string = ("%(asctime)s | %(levelname)s | %(message)s")
+    log_format = logging.Formatter(fmt=format_string, datefmt='%Y-%m-%d | %H:%M:%S')
+    # Creating and adding the console handler
+    # console_handler = logging.StreamHandler(sys.stdout)
+    # console_handler.setFormatter(log_format)
+    # logger.addHandler(console_handler)
+    # Creating and adding the file handler
+    file_handler = logging.FileHandler(logger_name, mode='a')
+    file_handler.setFormatter(log_format)
+    logger.addHandler(file_handler)
+    return logger
+
+
 def pickle_write(data, filenm, folder='AGM1'):
     with open('result/' + folder + '/' + filenm + ".pkl", "wb") as f:
         pickle.dump(data, f)
@@ -218,7 +240,25 @@ def log_read(logname = 'AGM'):
 
 
 
-
+#%% Stepwise Strategy - armijo
+def armijo(d, obj, s, sigma, gamma,config):
+    alpha = s
+    obj_2 = ObjFunc(X           = obj.X+alpha*d
+                   ,a          = obj.a
+                   ,mat_config = config
+                   ,delta      = obj.delta
+                   ,lam        = obj.lam
+                   ,if_use_weight = obj.if_use_weight)
+    while obj_2.obj_func() > obj.obj_func() + gamma * alpha * \
+            (np.dot((obj.grad_obj_func().reshape(-1, 1).T), d.reshape(-1, 1)))[0][0]:
+        alpha = alpha * sigma
+        obj_2 = ObjFunc(X           = obj.X+alpha*d
+                        ,a          = obj.a
+                        ,mat_config = config
+                        ,delta      = obj.delta
+                        ,lam        = obj.lam
+                        ,if_use_weight = obj.if_use_weight)  
+    return alpha, obj_2
 
 
 
